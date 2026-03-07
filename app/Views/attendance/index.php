@@ -42,7 +42,9 @@
                     <th><i class="bi bi-box-arrow-in-right text-success me-1"></i>Shift In</th>
                     <th><i class="bi bi-cup-hot text-warning me-1"></i>Break</th>
                     <th><i class="bi bi-box-arrow-right text-danger me-1"></i>Shift Out</th>
-                    <th>Net Hours</th>
+                    <th><i class="bi bi-clock text-success me-1"></i>Total Hours</th>
+                    <th><i class="bi bi-cup-hot-fill text-warning me-1"></i>Break Hours</th>
+                    <th><i class="bi bi-hourglass-split text-primary me-1"></i>Net Hours</th>
                     <th>Status</th>
                     <th class="text-end">Actions</th>
                 </tr>
@@ -64,6 +66,16 @@
                 }
                 $breakCell = empty($breakCells) ? '—' : implode('<br>', $breakCells);
 
+                $grossMins = isset($row['gross_minutes']) && $row['gross_minutes'] > 0 ? (int)$row['gross_minutes'] : null;
+                $grossDur  = $grossMins !== null
+                    ? floor($grossMins / 60) . 'h ' . ($grossMins % 60 > 0 ? ($grossMins % 60) . 'm' : '')
+                    : '—';
+
+                $breakMins = isset($row['total_break_minutes']) && $row['total_break_minutes'] > 0 ? (int)$row['total_break_minutes'] : null;
+                $breakDur  = $breakMins !== null
+                    ? floor($breakMins / 60) . 'h ' . ($breakMins % 60 > 0 ? ($breakMins % 60) . 'm' : '')
+                    : '—';
+
                 $netMins = isset($row['net_minutes']) && $row['net_minutes'] > 0 ? (int)$row['net_minutes'] : null;
                 $netDur  = $netMins !== null
                     ? floor($netMins / 60) . 'h ' . ($netMins % 60 > 0 ? ($netMins % 60) . 'm' : '')
@@ -84,7 +96,9 @@
                 <td><?= $in ?></td>
                 <td class="small text-muted"><?= $breakCell ?></td>
                 <td><?= $out ?></td>
-                <td><?= $netDur ?></td>
+                <td><span class="fw-medium text-success"><?= $grossDur ?></span></td>
+                <td><span class="fw-medium text-warning"><?= $breakDur ?></span></td>
+                <td><span class="fw-bold text-primary"><?= $netDur ?></span></td>
                 <td><span class="badge <?= $badgeClass ?>"><?= ucfirst($status) ?></span></td>
                 <td class="text-end text-nowrap">
                     <!-- View Button -->
@@ -95,6 +109,8 @@
                             data-in="<?= esc($in) ?>"
                             data-out="<?= esc($out) ?>"
                             data-breaks="<?= esc($breakCell) ?>"
+                            data-gross="<?= esc($grossDur) ?>"
+                            data-breakhours="<?= esc($breakDur) ?>"
                             data-net="<?= esc($netDur) ?>">
                         <i class="bi bi-eye"></i>
                     </button>
@@ -146,9 +162,26 @@
                     <span class="text-muted w-50">Break Times:</span>
                     <span class="fw-medium text-warning text-end w-50" id="modal-emp-breaks">--</span>
                 </div>
-                <div class="d-flex justify-content-between mt-2 pt-2 border-top bg-light p-2 rounded">
-                    <span class="fw-medium">Total Net Hours:</span>
-                    <span class="fw-bold text-dark" id="modal-emp-net">--</span>
+                <hr class="my-2">
+                <div class="row g-2 mt-1">
+                    <div class="col-4">
+                        <div class="text-center p-2 rounded bg-success bg-opacity-10">
+                            <div class="text-muted small">Total Hours</div>
+                            <div class="fw-bold text-success" id="modal-emp-gross">--</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-center p-2 rounded bg-warning bg-opacity-10">
+                            <div class="text-muted small">Break Hours</div>
+                            <div class="fw-bold text-warning" id="modal-emp-breakhours">--</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-center p-2 rounded bg-primary bg-opacity-10">
+                            <div class="text-muted small">Net Hours</div>
+                            <div class="fw-bold text-primary" id="modal-emp-net">--</div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer border-top-0 pt-0">
@@ -170,6 +203,8 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('modal-emp-in').textContent = button.getAttribute('data-in');
             document.getElementById('modal-emp-out').textContent = button.getAttribute('data-out');
             document.getElementById('modal-emp-breaks').innerHTML = button.getAttribute('data-breaks') || '—';
+            document.getElementById('modal-emp-gross').textContent = button.getAttribute('data-gross') || '—';
+            document.getElementById('modal-emp-breakhours').textContent = button.getAttribute('data-breakhours') || '—';
             document.getElementById('modal-emp-net').textContent = button.getAttribute('data-net');
         });
     }

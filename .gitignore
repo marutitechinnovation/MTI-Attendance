@@ -128,5 +128,8 @@ _modules/*
 # Visual Studio Code
 .vscode/
 
+# DevTracker
+.devtracker/
+
 /results/
 /phpunit*.xml

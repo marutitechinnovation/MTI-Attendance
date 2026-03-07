@@ -97,6 +97,7 @@ class AttendanceModel extends Model
         $absent = $totalEmp - $present;
 
         $workStart = model('SettingsModel')->getSetting('work_start_time', '09:00');
+        if (strlen($workStart) === 5) $workStart .= ':00'; // normalize to H:i:s
         $late = (int) $db->query(
             "SELECT COUNT(*) AS cnt FROM attendance WHERE date = ? AND type = 'check_in' AND TIME(scanned_at) > ?",
             [$today, $workStart]
@@ -205,8 +206,10 @@ class AttendanceModel extends Model
             if ($emp['check_in'] && $emp['check_out']) {
                 $grossMins = round((strtotime($emp['check_out']) - strtotime($emp['check_in'])) / 60);
             }
-            
-            $emp['net_minutes'] = max(0, $grossMins - $totalBreakMins);
+
+            $emp['gross_minutes']       = $grossMins;
+            $emp['total_break_minutes'] = $totalBreakMins;
+            $emp['net_minutes']         = max(0, $grossMins - $totalBreakMins);
             
             $emp['break_start'] = $emp['breaks'][0]['start'] ?? null;
             $emp['break_end'] = $emp['breaks'][count($emp['breaks']) - 1]['end'] ?? null;
@@ -249,12 +252,15 @@ class AttendanceModel extends Model
         }
 
         $workStart = model('SettingsModel')->getSetting('work_start_time', '09:00:00');
+        if (strlen($workStart) === 5) $workStart .= ':00'; // normalize to H:i:s
         
         $workingDaysInfo = $this->getWorkingDaysInfo($month);
 
         foreach ($employees as &$emp) {
             $emp['days_present'] = 0;
             $emp['late_days'] = 0;
+            $emp['total_gross_minutes'] = 0;
+            $emp['total_break_minutes'] = 0;
             $emp['total_net_minutes'] = 0;
             $emp['working_days_info'] = $workingDaysInfo;
 
@@ -291,12 +297,153 @@ class AttendanceModel extends Model
                 if ($checkIn && $checkOut) {
                     $grossMins = round((strtotime($checkOut) - strtotime($checkIn)) / 60);
                     $netMins = max(0, $grossMins - $totalBreakMins);
+                    $emp['total_gross_minutes'] += $grossMins;
+                    $emp['total_break_minutes'] += $totalBreakMins;
                     $emp['total_net_minutes'] += $netMins;
                 }
             }
         }
 
         return $employees;
+    }
+
+    /**
+     * Returns day-by-day attendance detail for one employee in a month.
+     */
+    public function getEmployeeMonthlyDetail(string $month, int $employeeId): array
+    {
+        $this->autoCheckoutMissedLogs();
+
+        $db   = \Config\Database::connect();
+        $from = $month . '-01';
+        $to   = date('Y-m-t', strtotime($from));
+        $totalDays = (int) date('t', strtotime($from));
+
+        $workStart = model('SettingsModel')->getSetting('work_start_time', '09:00:00');
+        if (strlen($workStart) === 5) $workStart .= ':00'; // normalize to H:i:s
+
+        // Get weekend config
+        $settingsJson = model('SettingsModel')->getSetting('weekend_days', '["Saturday", "Sunday"]');
+        $weekends = json_decode($settingsJson, true);
+        if (!is_array($weekends)) $weekends = ['Saturday', 'Sunday'];
+
+        // Get holidays
+        $holidays = $db->table('holidays')
+                       ->where('date >=', $from)
+                       ->where('date <=', $to)
+                       ->get()->getResultArray();
+        $holidayMap = [];
+        foreach ($holidays as $h) {
+            $holidayMap[$h['date']] = $h['name'];
+        }
+
+        // Get all attendance for this employee in the month
+        $logs = $db->table('attendance')
+                   ->where('employee_id', $employeeId)
+                   ->where('date >=', $from)
+                   ->where('date <=', $to)
+                   ->orderBy('scanned_at', 'ASC')
+                   ->get()->getResultArray();
+
+        $logsByDate = [];
+        foreach ($logs as $log) {
+            $logsByDate[$log['date']][] = $log;
+        }
+
+        $days = [];
+        $totals = [
+            'present' => 0, 'absent' => 0, 'late' => 0,
+            'gross_minutes' => 0, 'break_minutes' => 0, 'net_minutes' => 0,
+        ];
+
+        for ($i = 1; $i <= $totalDays; $i++) {
+            $dateStr = $month . '-' . str_pad((string)$i, 2, '0', STR_PAD_LEFT);
+            $dayName = date('l', strtotime($dateStr));
+            $isFuture = $dateStr > date('Y-m-d');
+
+            $day = [
+                'date'          => $dateStr,
+                'day_name'      => $dayName,
+                'day_short'     => date('D', strtotime($dateStr)),
+                'is_weekend'    => in_array($dayName, $weekends),
+                'is_holiday'    => isset($holidayMap[$dateStr]),
+                'holiday_name'  => $holidayMap[$dateStr] ?? null,
+                'is_future'     => $isFuture,
+                'check_in'      => null,
+                'check_out'     => null,
+                'breaks'        => [],
+                'gross_minutes' => 0,
+                'break_minutes' => 0,
+                'net_minutes'   => 0,
+                'is_late'       => false,
+                'geofence_status' => null,
+                'status'        => 'absent',
+            ];
+
+            if ($day['is_weekend'])  $day['status'] = 'weekend';
+            if ($day['is_holiday'])  $day['status'] = 'holiday';
+            if ($day['is_future'])   $day['status'] = 'future';
+
+            $dayLogs = $logsByDate[$dateStr] ?? [];
+            if (!empty($dayLogs)) {
+                $breakStart = null;
+                $totalBreakMins = 0;
+
+                foreach ($dayLogs as $log) {
+                    if ($log['type'] === 'check_in' && !$day['check_in']) {
+                        $day['check_in'] = $log['scanned_at'];
+                        if (date('H:i:s', strtotime($log['scanned_at'])) > $workStart) {
+                            $day['is_late'] = true;
+                            $totals['late']++;
+                        }
+                    }
+                    if ($log['type'] === 'check_out') {
+                        $day['check_out'] = $log['scanned_at'];
+                    }
+                    if ($log['type'] === 'break_start') {
+                        $breakStart = $log['scanned_at'];
+                    }
+                    if ($log['type'] === 'break_end' && $breakStart) {
+                        $day['breaks'][] = ['start' => $breakStart, 'end' => $log['scanned_at']];
+                        $totalBreakMins += round((strtotime($log['scanned_at']) - strtotime($breakStart)) / 60);
+                        $breakStart = null;
+                    }
+                    if ($log['geofence_status'] === 'flagged') {
+                        $day['geofence_status'] = 'flagged';
+                    } elseif (!$day['geofence_status'] && $log['geofence_status']) {
+                        $day['geofence_status'] = $log['geofence_status'];
+                    }
+                }
+
+                if ($breakStart && !$day['check_out']) {
+                    $day['breaks'][] = ['start' => $breakStart, 'end' => null];
+                }
+
+                if ($day['check_in']) {
+                    $day['status'] = $day['geofence_status'] === 'flagged' ? 'flagged' : 'present';
+                    $totals['present']++;
+                }
+
+                if ($day['check_in'] && $day['check_out']) {
+                    $grossMins = round((strtotime($day['check_out']) - strtotime($day['check_in'])) / 60);
+                    $day['gross_minutes'] = $grossMins;
+                    $day['break_minutes'] = $totalBreakMins;
+                    $day['net_minutes']   = max(0, $grossMins - $totalBreakMins);
+
+                    $totals['gross_minutes'] += $day['gross_minutes'];
+                    $totals['break_minutes'] += $day['break_minutes'];
+                    $totals['net_minutes']   += $day['net_minutes'];
+                }
+            } else {
+                if (!$day['is_weekend'] && !$day['is_holiday'] && !$day['is_future']) {
+                    $totals['absent']++;
+                }
+            }
+
+            $days[] = $day;
+        }
+
+        return ['days' => $days, 'totals' => $totals];
     }
 
     /**

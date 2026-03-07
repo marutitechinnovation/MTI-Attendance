@@ -27,9 +27,6 @@
             <button type="submit" class="btn btn-primary btn-sm">
                 <i class="bi bi-funnel me-1"></i> Filter
             </button>
-            <a href="<?= base_url('reports/export-csv?month=' . urlencode($month) . '&employee_id=' . urlencode($selectedEmployee ?? '') . '&department=' . urlencode($selectedDepartment ?? '')) ?>" class="btn btn-success btn-sm ms-auto">
-                <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
-            </a>
         </form>
     </div>
 </div>
@@ -46,7 +43,7 @@
         </span>
     </div>
     <div class="card-body p-0">
-        <table class="table table-hover datatable mb-0" id="reports-table" width="100%">
+        <table class="table table-hover mb-0" id="reports-table" width="100%">
             <thead>
                 <tr>
                     <th>Name</th>
@@ -54,7 +51,9 @@
                     <th>Present</th>
                     <th>Absent</th>
                     <th>Late</th>
-                    <th>Total Hours</th>
+                    <th><i class="bi bi-clock text-success me-1"></i>Total Hours</th>
+                    <th><i class="bi bi-cup-hot-fill text-warning me-1"></i>Break Hours</th>
+                    <th><i class="bi bi-hourglass-split text-primary me-1"></i>Net Hours</th>
                     <th>Avg / Day</th>
                     <th>Attendance %</th>
                 </tr>
@@ -65,14 +64,26 @@
                 $pct      = $workingDaysInfo['total_working_days'] > 0 ? round(($row['days_present'] / $workingDaysInfo['total_working_days']) * 100) : 0;
                 $barColor = $pct >= 80 ? 'bg-success' : ($pct >= 60 ? 'bg-warning' : 'bg-danger');
 
-                // Total working hours for the month
-                $totalMins = (int)($row['total_net_minutes'] ?? 0);
-                $totalH    = floor($totalMins / 60);
-                $totalM    = $totalMins % 60;
-                $totalStr  = $totalMins > 0 ? $totalH . 'h' . ($totalM > 0 ? ' ' . $totalM . 'm' : '') : '—';
+                // Total gross hours (check-in to check-out)
+                $grossMins = (int)($row['total_gross_minutes'] ?? 0);
+                $grossH    = floor($grossMins / 60);
+                $grossM    = $grossMins % 60;
+                $grossStr  = $grossMins > 0 ? $grossH . 'h' . ($grossM > 0 ? ' ' . $grossM . 'm' : '') : '—';
 
-                // Average hours per present day
-                $avgMins = $row['days_present'] > 0 ? round($totalMins / $row['days_present']) : 0;
+                // Total break hours
+                $breakMins = (int)($row['total_break_minutes'] ?? 0);
+                $breakH    = floor($breakMins / 60);
+                $breakM    = $breakMins % 60;
+                $breakStr  = $breakMins > 0 ? $breakH . 'h' . ($breakM > 0 ? ' ' . $breakM . 'm' : '') : '—';
+
+                // Net working hours
+                $netMins   = (int)($row['total_net_minutes'] ?? 0);
+                $netH      = floor($netMins / 60);
+                $netM      = $netMins % 60;
+                $netStr    = $netMins > 0 ? $netH . 'h' . ($netM > 0 ? ' ' . $netM . 'm' : '') : '—';
+
+                // Average hours per present day (based on net)
+                $avgMins = $row['days_present'] > 0 ? round($netMins / $row['days_present']) : 0;
                 $avgH    = floor($avgMins / 60);
                 $avgM    = $avgMins % 60;
                 $avgStr  = $avgMins > 0 ? $avgH . 'h' . ($avgM > 0 ? ' ' . $avgM . 'm' : '') : '—';
@@ -83,12 +94,19 @@
                           : ($avgMins > 0   ? 'bg-danger-subtle text-danger border-danger-subtle' : 'bg-secondary-subtle text-secondary border-secondary-subtle'));
             ?>
             <tr>
-                <td class="fw-medium"><?= esc($row['name']) ?></td>
+                <td class="fw-medium">
+                    <a href="<?= base_url('reports/employee-detail?employee_id=' . $row['id'] . '&month=' . urlencode($month)) ?>" 
+                       class="text-decoration-none text-dark" title="View day-by-day detail">
+                        <?= esc($row['name']) ?> <i class="bi bi-box-arrow-up-right text-muted" style="font-size:0.7rem;"></i>
+                    </a>
+                </td>
                 <td><?= esc($row['department']) ?></td>
                 <td><span class="text-success fw-semibold"><?= $row['days_present'] ?></span></td>
                 <td><span class="text-danger fw-semibold"><?= $absent ?></span></td>
                 <td><span class="text-warning fw-semibold"><?= $row['late_days'] ?></span></td>
-                <td><span class="fw-semibold"><?= $totalStr ?></span></td>
+                <td><span class="fw-semibold text-success"><?= $grossStr ?></span></td>
+                <td><span class="fw-semibold text-warning"><?= $breakStr ?></span></td>
+                <td><span class="fw-bold text-primary"><?= $netStr ?></span></td>
                 <td><span class="badge border <?= $avgBadge ?>"><?= $avgStr ?></span></td>
                 <td style="min-width:130px;">
                     <div class="d-flex align-items-center gap-2">

@@ -27,17 +27,29 @@ function initDataTables() {
 
         // Column-specific settings per table
         let columnDefs = [{ orderable: false, targets: -1 }];
+        let paging = true;
 
         // Attendance table: also disable ordering on Break column (index 3 — contains HTML)
         if (tableId === 'attendance-table') {
             columnDefs = [
-                { orderable: false, targets: [3, 6] }   // Break col + Status col
+                { orderable: false, targets: [3, 8] }   // Break col + Actions col
             ];
+        }
+
+        // Employee detail table: no actions column, show all rows, custom export title
+        let exportTitle = null;
+        if (tableId === 'employee-detail-table') {
+            columnDefs = [
+                { orderable: false, targets: [2] }   // Break col only
+            ];
+            paging = false;
+            exportTitle = $(this).data('export-title') || 'Attendance Detail';
         }
 
         $(this).DataTable({
             pageLength: 25,
             lengthMenu: [10, 25, 50, 100],
+            paging: paging,
 
             //  Toolbar:  [Search LEFT]  ·············  [Buttons RIGHT]
             //  Table:    [t]
@@ -49,25 +61,163 @@ function initDataTables() {
 
             buttons: [
                 {
-                    extend:    'csvHtml5',
-                    text:      '<i class="bi bi-filetype-csv me-1"></i>CSV',
-                    titleAttr: 'Export CSV',
-                    className: 'dt-export-btn'
+                    extend:    'excelHtml5',
+                    text:      '<i class="bi bi-file-earmark-excel me-1"></i>Excel',
+                    titleAttr: 'Export Excel',
+                    className: 'dt-export-btn',
+                    title:     exportTitle,
+                    exportOptions: { columns: ':visible' }
                 },
                 {
-                    extend:    'pdfHtml5',
                     text:      '<i class="bi bi-filetype-pdf me-1"></i>PDF',
                     titleAttr: 'Export PDF',
                     className: 'dt-export-btn dt-export-pdf',
-                    orientation: 'landscape',
-                    pageSize:    'A4',
-                    exportOptions: { columns: ':not(:last-child)' }
+                    action: function (e, dt, node, config) {
+                        const { jsPDF } = window.jspdf;
+                        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+                        const title = exportTitle || document.querySelector('.topbar .fw-semibold')?.textContent || 'Report';
+                        const now = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+                        // Helper: clean text (remove icon font chars that show as !)
+                        const cleanText = (el) => {
+                            let text = '';
+                            $(el).contents().each(function() {
+                                if (this.nodeType === 3) { // text node only
+                                    text += this.textContent;
+                                } else if ($(this).is('span, a, b, strong, em, small')) {
+                                    text += $(this).text();
+                                }
+                            });
+                            return text.trim().replace(/\s+/g, ' ') || $(el).text().trim().replace(/\s+/g, ' ');
+                        };
+
+                        // Header bar
+                        doc.setFillColor(13, 110, 253);
+                        doc.rect(0, 0, 297, 18, 'F');
+                        doc.setTextColor(255, 255, 255);
+                        doc.setFontSize(14);
+                        doc.setFont(undefined, 'bold');
+                        doc.text(title, 14, 11);
+                        doc.setFontSize(9);
+                        doc.setFont(undefined, 'normal');
+                        doc.text('Generated: ' + now, 283, 11, { align: 'right' });
+
+                        // Extract headers (strip icon text)
+                        const headers = [];
+                        dt.columns(':visible').every(function () {
+                            const $th = $(this.header());
+                            // Get text without icon <i> content
+                            const clone = $th.clone();
+                            clone.find('i').remove();
+                            headers.push(clone.text().trim());
+                        });
+
+                        // Extract body rows
+                        const rows = [];
+                        dt.rows({ search: 'applied' }).every(function () {
+                            const row = [];
+                            const cells = $(this.node()).find('td:visible');
+                            cells.each(function () {
+                                const clone = $(this).clone();
+                                clone.find('i').remove();
+                                let cellText = clone.text().trim().replace(/\s+/g, ' ');
+                                // Replace Unicode arrows that jsPDF can't render
+                                cellText = cellText.replace(/[\u2192\u2190\u2194\u21D2\u279C]/g, '->');
+                                row.push(cellText);
+                            });
+                            rows.push(row);
+                        });
+
+                        // Extract tfoot (totals row)
+                        const footRows = [];
+                        const $tfoot = $(dt.table().node()).find('tfoot tr');
+                        if ($tfoot.length) {
+                            $tfoot.each(function () {
+                                const footRow = [];
+                                $(this).find('td, th').each(function () {
+                                    const clone = $(this).clone();
+                                    clone.find('i').remove();
+                                    const colspan = parseInt($(this).attr('colspan')) || 1;
+                                    const cellText = clone.text().trim().replace(/\s+/g, ' ');
+                                    footRow.push({ content: cellText, colSpan: colspan, styles: { fontStyle: 'bold', fillColor: [33, 37, 41], textColor: [255, 255, 255] } });
+                                });
+                                footRows.push(footRow);
+                            });
+                        }
+
+                        // AutoTable
+                        const tableConfig = {
+                            head: [headers],
+                            body: rows,
+                            startY: 22,
+                            showFoot: 'lastPage',
+                            theme: 'grid',
+                            styles: {
+                                fontSize: 8,
+                                cellPadding: 2.5,
+                                lineColor: [220, 220, 220],
+                                lineWidth: 0.3,
+                                overflow: 'linebreak',
+                            },
+                            headStyles: {
+                                fillColor: [13, 110, 253],
+                                textColor: [255, 255, 255],
+                                fontStyle: 'bold',
+                                fontSize: 8.5,
+                                halign: 'center',
+                            },
+                            alternateRowStyles: {
+                                fillColor: [245, 247, 250],
+                            },
+                            columnStyles: {
+                                0: { cellWidth: 28 },
+                            },
+                            didParseCell: function(data) {
+                                if (data.section === 'body') {
+                                    const text = data.cell.raw || '';
+                                    if (text.includes('Present'))  data.cell.styles.textColor = [25, 135, 84];
+                                    if (text.includes('Absent'))   data.cell.styles.textColor = [220, 53, 69];
+                                    if (text.includes('Late') || text.includes('Flagged')) data.cell.styles.textColor = [255, 193, 7];
+                                    if (text.includes('Weekend') || text.includes('Holiday')) data.cell.styles.textColor = [108, 117, 125];
+                                }
+                            },
+                            margin: { top: 22, left: 10, right: 10 },
+                        };
+
+                        if (footRows.length) {
+                            tableConfig.foot = footRows;
+                            tableConfig.footStyles = {
+                                fillColor: [33, 37, 41],
+                                textColor: [255, 255, 255],
+                                fontStyle: 'bold',
+                                fontSize: 8.5,
+                            };
+                        }
+
+                        doc.autoTable(tableConfig);
+
+                        // Page footer
+                        const pageCount = doc.internal.getNumberOfPages();
+                        for (let i = 1; i <= pageCount; i++) {
+                            doc.setPage(i);
+                            doc.setFontSize(7);
+                            doc.setTextColor(150);
+                            doc.text('Page ' + i + ' of ' + pageCount, 283, 200, { align: 'right' });
+                            doc.text('MTI Attendance System', 14, 200);
+                        }
+
+                        const filename = (exportTitle || 'report').replace(/[^a-zA-Z0-9]/g, '_') + '.pdf';
+                        doc.save(filename);
+                    }
                 },
                 {
                     extend:    'print',
                     text:      '<i class="bi bi-printer me-1"></i>Print',
                     titleAttr: 'Print',
-                    className: 'dt-export-btn'
+                    className: 'dt-export-btn',
+                    title:     exportTitle,
+                    exportOptions: { columns: ':visible' }
                 }
             ],
 

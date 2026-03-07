@@ -35,6 +35,35 @@ class Reports extends BaseController
         ]);
     }
 
+    public function employeeDetail()
+    {
+        $month      = $this->request->getGet('month') ?? date('Y-m');
+        $employeeId = (int)($this->request->getGet('employee_id') ?? 0);
+
+        if (!$employeeId) {
+            return redirect()->to('/reports')->with('error', 'Employee not found.');
+        }
+
+        $empModel = new EmployeeModel();
+        $employee = $empModel->find($employeeId);
+        if (!$employee) {
+            return redirect()->to('/reports')->with('error', 'Employee not found.');
+        }
+
+        $model  = new AttendanceModel();
+        $detail = $model->getEmployeeMonthlyDetail($month, $employeeId);
+        $workingDaysInfo = $model->getWorkingDaysInfo($month);
+
+        return view('reports/employee_detail', [
+            'employee'        => $employee,
+            'month'           => $month,
+            'days'            => $detail['days'],
+            'totals'          => $detail['totals'],
+            'workingDaysInfo' => $workingDaysInfo,
+            'pageTitle'       => esc($employee['name']) . ' — Monthly Detail',
+        ]);
+    }
+
     public function exportCsv()
     {
         $month      = $this->request->getGet('month') ?? date('Y-m');
@@ -53,16 +82,30 @@ class Reports extends BaseController
         header('Content-Disposition: attachment; filename="' . $filename . '"');
 
         $out = fopen('php://output', 'w');
-        fputcsv($out, ['Name', 'Department', 'Total Working Days', 'Days Present', 'Late Days', 'Days Absent', 'Total Hours', 'Avg Hours/Day']);
+        fputcsv($out, ['Name', 'Department', 'Total Working Days', 'Days Present', 'Late Days', 'Days Absent', 'Total Hours', 'Break Hours', 'Net Hours', 'Avg Hours/Day']);
 
 
         foreach ($report as $row) {
-            $totalMins = (int)($row['total_net_minutes'] ?? 0);
-            $totalH = floor($totalMins / 60);
-            $totalM = $totalMins % 60;
-            $totalStr = $totalMins > 0 ? $totalH . 'h' . ($totalM > 0 ? ' ' . $totalM . 'm' : '') : '0h';
+            // Gross hours
+            $grossMins = (int)($row['total_gross_minutes'] ?? 0);
+            $grossH = floor($grossMins / 60);
+            $grossM = $grossMins % 60;
+            $grossStr = $grossMins > 0 ? $grossH . 'h' . ($grossM > 0 ? ' ' . $grossM . 'm' : '') : '0h';
 
-            $avgMins = $row['days_present'] > 0 ? round($totalMins / $row['days_present']) : 0;
+            // Break hours
+            $breakMins = (int)($row['total_break_minutes'] ?? 0);
+            $breakH = floor($breakMins / 60);
+            $breakM = $breakMins % 60;
+            $breakStr = $breakMins > 0 ? $breakH . 'h' . ($breakM > 0 ? ' ' . $breakM . 'm' : '') : '0h';
+
+            // Net hours
+            $netMins = (int)($row['total_net_minutes'] ?? 0);
+            $netH = floor($netMins / 60);
+            $netM = $netMins % 60;
+            $netStr = $netMins > 0 ? $netH . 'h' . ($netM > 0 ? ' ' . $netM . 'm' : '') : '0h';
+
+            // Average per day (based on net)
+            $avgMins = $row['days_present'] > 0 ? round($netMins / $row['days_present']) : 0;
             $avgH = floor($avgMins / 60);
             $avgM = $avgMins % 60;
             $avgStr = $avgMins > 0 ? $avgH . 'h' . ($avgM > 0 ? ' ' . $avgM . 'm' : '') : '0h';
@@ -77,7 +120,9 @@ class Reports extends BaseController
                 $row['days_present'],
                 $row['late_days'],
                 $daysAbsent,
-                $totalStr,
+                $grossStr,
+                $breakStr,
+                $netStr,
                 $avgStr,
             ]);
         }

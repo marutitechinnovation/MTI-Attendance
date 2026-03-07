@@ -51,6 +51,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
 
     // Reports
     $routes->get('reports',                      'Reports::index');
+    $routes->get('reports/employee-detail',      'Reports::employeeDetail');
     $routes->get('reports/export-csv',           'Reports::exportCsv');
 
     // Map
