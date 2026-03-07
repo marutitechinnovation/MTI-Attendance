@@ -97,10 +97,10 @@ class AttendanceModel extends Model
         $absent = $totalEmp - $present;
 
         $workStart = model('SettingsModel')->getSetting('work_start_time', '09:00');
-        if (strlen($workStart) === 5) $workStart .= ':00'; // normalize to H:i:s
+        $workStartHi = date('H:i', strtotime($workStart)); // normalize to H:i for comparison
         $late = (int) $db->query(
-            "SELECT COUNT(*) AS cnt FROM attendance WHERE date = ? AND type = 'check_in' AND TIME(scanned_at) > ?",
-            [$today, $workStart]
+            "SELECT COUNT(*) AS cnt FROM attendance WHERE date = ? AND type = 'check_in' AND TIME_FORMAT(scanned_at, '%H:%i') > ?",
+            [$today, $workStartHi]
         )->getRow()->cnt;
 
         return compact('totalEmp', 'present', 'absent', 'late');
@@ -252,7 +252,7 @@ class AttendanceModel extends Model
         }
 
         $workStart = model('SettingsModel')->getSetting('work_start_time', '09:00:00');
-        if (strlen($workStart) === 5) $workStart .= ':00'; // normalize to H:i:s
+        $workStartHi = date('H:i', strtotime($workStart)); // compare at minute precision
         
         $workingDaysInfo = $this->getWorkingDaysInfo($month);
 
@@ -274,7 +274,7 @@ class AttendanceModel extends Model
                 foreach ($logs as $log) {
                     if ($log['type'] === 'check_in' && !$checkIn) {
                         $checkIn = $log['scanned_at'];
-                        if (date('H:i:s', strtotime($checkIn)) > $workStart) {
+                        if (date('H:i', strtotime($checkIn)) > $workStartHi) {
                             $emp['late_days']++;
                         }
                     }
@@ -320,7 +320,7 @@ class AttendanceModel extends Model
         $totalDays = (int) date('t', strtotime($from));
 
         $workStart = model('SettingsModel')->getSetting('work_start_time', '09:00:00');
-        if (strlen($workStart) === 5) $workStart .= ':00'; // normalize to H:i:s
+        $workStartHi = date('H:i', strtotime($workStart)); // compare at minute precision
 
         // Get weekend config
         $settingsJson = model('SettingsModel')->getSetting('weekend_days', '["Saturday", "Sunday"]');
@@ -392,7 +392,7 @@ class AttendanceModel extends Model
                 foreach ($dayLogs as $log) {
                     if ($log['type'] === 'check_in' && !$day['check_in']) {
                         $day['check_in'] = $log['scanned_at'];
-                        if (date('H:i:s', strtotime($log['scanned_at'])) > $workStart) {
+                        if (date('H:i', strtotime($log['scanned_at'])) > $workStartHi) {
                             $day['is_late'] = true;
                             $totals['late']++;
                         }
