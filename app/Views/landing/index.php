@@ -504,8 +504,10 @@
 
     <!-- Footer -->
     <footer>
-        <p>&copy; <?= date('Y') ?> MTI Attendance. All rights reserved.</p>
+        <p>&copy; <?= date('Y') ?> MTI Attendance. All rights reserved. | <a href="<?= base_url('privacy') ?>" target="_blank" style="color: rgba(255,255,255,0.6); text-decoration: none;">Privacy Policy</a></p>
     </footer>
+
+
 
     <script>
         // Smooth scrolling for anchor links

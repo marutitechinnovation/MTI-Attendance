@@ -11,6 +11,11 @@ class Landing extends BaseController
         return view('landing/index');
     }
 
+    public function privacy()
+    {
+        return view('landing/privacy');
+    }
+
     public function submitContact()
     {
         $name    = $this->request->getPost('name');

@@ -11,6 +11,7 @@ $routes->get('/signup', 'Auth::signup');
 $routes->post('/signup', 'Auth::signupPost');
 $routes->get('/logout', 'Auth::logout');
 $routes->get('/',       'Landing::index');
+$routes->get('/privacy',  'Landing::privacy');
 $routes->post('/contact', 'Landing::submitContact');
 
 // Admin Web Panel (protected by session auth filter)
