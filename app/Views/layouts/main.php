@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <?php if (strpos(current_url(), '/map') !== false || strpos(current_url(), '/qr-codes/show') !== false || strpos(current_url(), '/qr-codes/edit') !== false || strpos(current_url(), '/qr-codes/create') !== false): ?>
+    <?php if (strpos(current_url(), '/map') !== false || strpos(current_url(), '/qr-codes/show') !== false || strpos(current_url(), '/qr-codes/edit') !== false || strpos(current_url(), '/qr-codes/create') !== false || strpos(current_url(), '/attendance') !== false): ?>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <?php endif; ?>
     <?php if (url_is('dashboard*')): ?>
@@ -126,7 +126,7 @@
 <!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<?php if (strpos(current_url(), '/map') !== false || strpos(current_url(), '/qr-codes/show') !== false || strpos(current_url(), '/qr-codes/edit') !== false || strpos(current_url(), '/qr-codes/create') !== false): ?>
+<?php if (strpos(current_url(), '/map') !== false || strpos(current_url(), '/qr-codes/show') !== false || strpos(current_url(), '/qr-codes/edit') !== false || strpos(current_url(), '/qr-codes/create') !== false || strpos(current_url(), '/attendance') !== false): ?>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <?php endif; ?>
 <!-- DataTables -->

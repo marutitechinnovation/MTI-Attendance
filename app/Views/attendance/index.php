@@ -93,7 +93,12 @@
             <tr>
                 <td class="fw-medium"><?= esc($row['name']) ?></td>
                 <td><?= esc($row['department']) ?></td>
-                <td><?= $in ?></td>
+                <td>
+                    <?= $in ?>
+                    <?php if ($row['is_late']): ?>
+                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle ms-1" style="font-size: 0.65rem;">LATE</span>
+                    <?php endif; ?>
+                </td>
                 <td class="small text-muted"><?= $breakCell ?></td>
                 <td><?= $out ?></td>
                 <td><span class="fw-medium text-success"><?= $grossDur ?></span></td>
@@ -111,7 +116,10 @@
                             data-breaks="<?= esc($breakCell) ?>"
                             data-gross="<?= esc($grossDur) ?>"
                             data-breakhours="<?= esc($breakDur) ?>"
-                            data-net="<?= esc($netDur) ?>">
+                            data-net="<?= esc($netDur) ?>"
+                            data-late="<?= $row['is_late'] ? 'Yes' : 'No' ?>"
+                            data-flagdetails="<?= esc($row['flag_details']) ?>"
+                            data-flagged-scans='<?= $row['flagged_scans_json'] ?>'>
                         <i class="bi bi-eye"></i>
                     </button>
                     <!-- Edit Button -->
@@ -162,6 +170,16 @@
                     <span class="text-muted w-50">Break Times:</span>
                     <span class="fw-medium text-warning text-end w-50" id="modal-emp-breaks">--</span>
                 </div>
+                <!-- Late Section (Hidden by default) -->
+                <div id="modal-late-row" class="alert alert-warning py-1 px-2 small mb-2 d-none">
+                    <i class="bi bi-clock-history me-1"></i> Arrived late today
+                </div>
+                <!-- Flag Section (Hidden by default) -->
+                <div id="modal-flag-row" class="alert alert-danger py-1 px-2 small mb-2 d-none">
+                    <i class="bi bi-geo-fill me-1"></i> <strong>Location Flag:</strong>
+                    <div id="modal-emp-flagdetails" class="mt-1">--</div>
+                    <div id="flag-map" class="mt-2 rounded" style="height: 180px; width: 100%;"></div>
+                </div>
                 <hr class="my-2">
                 <div class="row g-2 mt-1">
                     <div class="col-4">
@@ -191,23 +209,4 @@
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const viewModal = document.getElementById('viewLogModal');
-    if(viewModal) {
-        viewModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
-            
-            document.getElementById('modal-emp-name').textContent = button.getAttribute('data-name');
-            document.getElementById('modal-emp-date').textContent = button.getAttribute('data-date');
-            document.getElementById('modal-emp-in').textContent = button.getAttribute('data-in');
-            document.getElementById('modal-emp-out').textContent = button.getAttribute('data-out');
-            document.getElementById('modal-emp-breaks').innerHTML = button.getAttribute('data-breaks') || '—';
-            document.getElementById('modal-emp-gross').textContent = button.getAttribute('data-gross') || '—';
-            document.getElementById('modal-emp-breakhours').textContent = button.getAttribute('data-breakhours') || '—';
-            document.getElementById('modal-emp-net').textContent = button.getAttribute('data-net');
-        });
-    }
-});
-</script>
 <?= $this->endSection() ?>

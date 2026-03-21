@@ -140,6 +140,21 @@ class AttendanceModel extends Model
 
     // ─── Reports ────────────────────────────────────────────────────────────────
 
+    /**
+     * Haversine distance in meters.
+     */
+    private function calculateDistance($lat1, $lon1, $lat2, $lon2): float
+    {
+        $earthRadius = 6371000; // meters
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lon2 - $lon1);
+        $a = sin($dLat / 2) * sin($dLat / 2) +
+             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+             sin($dLon / 2) * sin($dLon / 2);
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+        return $earthRadius * $c;
+    }
+
     public function getDailyLog(string $date, ?int $employeeId = null, ?string $department = null): array
     {
         // Automatically check out missed logs before calculating the log
@@ -155,10 +170,12 @@ class AttendanceModel extends Model
         
         $employees = $sql->get()->getResultArray();
         
-        $attQuery = $db->table('attendance')
-                       ->where('date', $date)
-                       ->orderBy('scanned_at', 'ASC');
-        if ($employeeId) $attQuery->where('employee_id', $employeeId);
+        $attQuery = $db->table('attendance a')
+                       ->select('a.*, q.latitude as qr_lat, q.longitude as qr_lng, q.location_name')
+                       ->join('qr_tokens q', 'q.id = a.qr_token_id', 'left')
+                       ->where('a.date', $date)
+                       ->orderBy('a.scanned_at', 'ASC');
+        if ($employeeId) $attQuery->where('a.employee_id', $employeeId);
         $attendanceLogs = $attQuery->get()->getResultArray();
 
         $attByEmp = [];
@@ -166,12 +183,18 @@ class AttendanceModel extends Model
             $attByEmp[$log['employee_id']][] = $log;
         }
 
+        $workStart = model('SettingsModel')->getSetting('work_start_time', '09:00:00');
+        $workStartHi = date('H:i', strtotime($workStart));
+
         foreach ($employees as &$emp) {
             $logs = $attByEmp[$emp['id']] ?? [];
             $emp['check_in'] = null;
             $emp['check_out'] = null;
             $emp['breaks'] = [];
             $emp['geofence_status'] = null;
+            $emp['is_late'] = false;
+            $emp['flag_details'] = [];
+            $emp['flagged_scans'] = [];
             
             $breakStart = null;
             $totalBreakMins = 0;
@@ -179,6 +202,9 @@ class AttendanceModel extends Model
             foreach ($logs as $log) {
                 if ($log['type'] === 'check_in' && !$emp['check_in']) {
                     $emp['check_in'] = $log['scanned_at'];
+                    if (date('H:i', strtotime($log['scanned_at'])) > $workStartHi) {
+                        $emp['is_late'] = true;
+                    }
                 }
                 if ($log['type'] === 'check_out') {
                     $emp['check_out'] = $log['scanned_at'];
@@ -191,8 +217,31 @@ class AttendanceModel extends Model
                     $totalBreakMins += round((strtotime($log['scanned_at']) - strtotime($breakStart)) / 60);
                     $breakStart = null;
                 }
+
                 if ($log['geofence_status'] === 'flagged') {
                     $emp['geofence_status'] = 'flagged';
+                    $scanTime = date('h:i A', strtotime($log['scanned_at']));
+                    
+                    $distance = null;
+                    if ($log['scan_latitude'] && $log['qr_lat']) {
+                        $distance = $this->calculateDistance((float)$log['scan_latitude'], (float)$log['scan_longitude'], (float)$log['qr_lat'], (float)$log['qr_lng']);
+                    }
+                    
+                    $details = "Flagged at $scanTime: " . ($log['note'] ?: 'Outside geofence');
+                    if ($distance !== null) {
+                        $km = number_format($distance / 1000, 2);
+                        $m  = round($distance);
+                        $details .= " ({$m}m / {$km}km away)";
+                    }
+                    
+                    $emp['flag_details'][] = $details;
+                    $emp['flagged_scans'][] = [
+                        'scan_lat' => (float)$log['scan_latitude'],
+                        'scan_lng' => (float)$log['scan_longitude'],
+                        'qr_lat'   => (float)$log['qr_lat'],
+                        'qr_lng'   => (float)$log['qr_lng'],
+                        'location' => $log['location_name']
+                    ];
                 } elseif (!$emp['geofence_status'] && $log['geofence_status']) {
                     $emp['geofence_status'] = $log['geofence_status'];
                 }
@@ -210,6 +259,8 @@ class AttendanceModel extends Model
             $emp['gross_minutes']       = $grossMins;
             $emp['total_break_minutes'] = $totalBreakMins;
             $emp['net_minutes']         = max(0, $grossMins - $totalBreakMins);
+            $emp['flag_details']        = !empty($emp['flag_details']) ? implode('<br>', $emp['flag_details']) : '';
+            $emp['flagged_scans_json']  = !empty($emp['flagged_scans']) ? json_encode($emp['flagged_scans']) : '';
             
             $emp['break_start'] = $emp['breaks'][0]['start'] ?? null;
             $emp['break_end'] = $emp['breaks'][count($emp['breaks']) - 1]['end'] ?? null;

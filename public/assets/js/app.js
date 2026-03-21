@@ -292,3 +292,89 @@ $(document).ready(function () {
     initDataTables();
 });
 
+// ── Global Attendance Details Modal Handler (Handles AJAX-replaced content) ──
+$(document).on('show.bs.modal', '#viewLogModal', function (event) {
+    const button = event.relatedTarget;
+    
+    $('#modal-emp-name').text($(button).data('name'));
+    $('#modal-emp-date').text($(button).data('date'));
+    $('#modal-emp-in').text($(button).data('in'));
+    $('#modal-emp-out').text($(button).data('out'));
+    $('#modal-emp-breaks').html($(button).data('breaks') || '—');
+    $('#modal-emp-gross').text($(button).data('gross') || '—');
+    $('#modal-emp-breakhours').text($(button).data('breakhours') || '—');
+    $('#modal-emp-net').text($(button).data('net'));
+
+    // Handle Late row
+    if ($(button).data('late') === 'Yes') {
+        $('#modal-late-row').removeClass('d-none');
+    } else {
+        $('#modal-late-row').addClass('d-none');
+    }
+
+    // Handle Flag details & Map
+    const flaggedData = $(button).data('flagged-scans');
+    if (flaggedData && flaggedData.length > 0) {
+        $('#modal-flag-row').removeClass('d-none');
+        $('#modal-emp-flagdetails').html($(button).data('flagdetails'));
+
+        // Initialize/reset map
+        if (window.flagMap) {
+            window.flagMap.remove();
+        }
+
+        setTimeout(() => {
+            if (!document.getElementById('flag-map')) return;
+
+            window.flagMap = L.map('flag-map');
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(window.flagMap);
+
+            const markers = [];
+            flaggedData.forEach(scan => {
+                const scanPos = [scan.scan_lat, scan.scan_lng];
+                const qrPos   = [scan.qr_lat, scan.qr_lng];
+
+                // User Scan Location (Red)
+                L.circleMarker(scanPos, {
+                    radius: 6,
+                    fillColor: "#dc3545",
+                    color: "#fff",
+                    weight: 2,
+                    fillOpacity: 1
+                }).addTo(window.flagMap).bindPopup("User Location");
+
+                // QR Office Location (Blue)
+                L.circleMarker(qrPos, {
+                    radius: 7,
+                    fillColor: "#0d6efd",
+                    color: "#fff",
+                    weight: 2,
+                    fillOpacity: 1
+                }).addTo(window.flagMap).bindPopup("Office: " + scan.location);
+
+                // Line between them
+                L.polyline([scanPos, qrPos], {
+                    color: '#dc3545',
+                    weight: 2,
+                    dashArray: '5, 8',
+                    opacity: 0.6
+                }).addTo(window.flagMap);
+
+                markers.push(scanPos, qrPos);
+            });
+
+            if (markers.length > 0) {
+                window.flagMap.fitBounds(markers, { padding: [30, 30] });
+            }
+        }, 400); // Wait for modal animation
+    } else {
+        $('#modal-flag-row').addClass('d-none');
+        if (window.flagMap) {
+            window.flagMap.remove();
+            window.flagMap = null;
+        }
+    }
+});
+
