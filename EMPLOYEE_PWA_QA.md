@@ -49,7 +49,7 @@ Use this checklist before production rollout of the employee PWA.
 
 - Dashboard summary values (in/out/break/worked/status) look correct.
 - Attendance history subtab shows grouped monthly records.
-- Status chip per day is correct (`Working`, `On Break`, `Shift Complete`, `Flagged`).
+- Status chip per day is correct (default labels: `Working`, `On Break`, `Shift Complete`, or your customized labels from Settings).
 - Calendar tab loads holiday list.
 - Profile tab shows employee details correctly.
 
@@ -74,4 +74,16 @@ Use this checklist before production rollout of the employee PWA.
 - One check-out
 - Verify records in admin attendance page
 - Verify no critical frontend errors in browser console
+
+## 10) Admin branding, map, and labels (Settings)
+
+Prerequisite: run `php spark migrate` so new `settings` keys exist (see migration `AddBrandingMapStatsSettings`).
+
+- Open **Admin → Settings** and save; confirm the green success alert appears.
+- Under **Employee PWA — name & colors**, change app name, short name, theme/background/accent hex. Reload `/employee/login` and confirm login title, meta `theme-color`, and colors update (icon/logo assets unchanged).
+- Open `GET /manifest.webmanifest` (same origin) and confirm `name`, `short_name`, `theme_color`, and `background_color` match Settings.
+- Under **Live map**, keep **OpenStreetMap**, open **Admin → Map**, confirm tiles load.
+- Set **Custom** tile URL (with `{z}` `{x}` `{y}` and `{apikey}` if needed), save a key, reload Map; confirm tiles load. Toggle **Remove saved map API key** and save; confirm custom tiles fail or fall back as expected until a key is set again.
+- Change **scan & status labels** in Settings; reload employee PWA dashboard and attendance flow and confirm summary headers, timeline text, modals, and status chips use the new wording.
+- Hard-reload or wait for service worker update after manifest changes; re-install PWA if the home screen name does not refresh immediately.
 

@@ -3,18 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#1A237E">
+    <meta name="theme-color" content="<?= esc($themeColor ?? '#1A237E') ?>">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="MTI Employee">
-    <title><?= esc($pageTitle ?? 'Employee App') ?> - MTI Attendance</title>
+    <meta name="apple-mobile-web-app-title" content="<?= esc($shortAppName ?? 'MTI Employee') ?>">
+    <title><?= esc($pageTitle ?? 'Employee App') ?> - <?= esc($brandName ?? 'MTI Attendance') ?></title>
 
     <link rel="manifest" href="<?= base_url('manifest.webmanifest') ?>">
     <link rel="icon" href="<?= base_url('assets/icons/icon-192.svg') ?>" type="image/svg+xml">
     <link rel="stylesheet" href="<?= base_url('assets/css/employee-pwa.css') ?>?v=<?= filemtime(FCPATH . 'assets/css/employee-pwa.css') ?>">
+    <style>
+        :root {
+            --primary: <?= esc($themeColor ?? '#1A237E') ?>;
+            --accent: <?= esc($accentColor ?? '#00BCD4') ?>;
+            --bg: <?= esc($backgroundColor ?? '#F5F7FB') ?>;
+        }
+        .login-shell {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary) 50%, var(--accent) 160%);
+        }
+    </style>
 </head>
 <body>
-<div id="app" data-base-url="<?= esc(rtrim(base_url(), '/')) ?>">
+<div id="app"
+     data-base-url="<?= esc(rtrim(base_url(), '/')) ?>"
+     data-pwa-config="<?= esc($pwaConfigJson ?? '{}', 'attr') ?>">
     <div id="offline-banner" class="offline-banner hidden">
         <span>You are offline. Some actions may not work.</span>
         <button id="offline-retry-btn" type="button">Retry</button>
@@ -24,7 +36,7 @@
         <div class="login-shell">
             <div class="login-brand">
                 <div class="logo-mark">M</div>
-                <h1>MTI Attendance</h1>
+                <h1><?= esc($brandName ?? 'MTI Attendance') ?></h1>
                 <p>Sign in with your employee account.</p>
             </div>
 
@@ -53,15 +65,15 @@
                     <h3 id="hello-name">Hello</h3>
                     <p id="hello-meta">Today summary</p>
                     <div class="summary-grid">
-                        <div class="summary-item"><span>Check In</span><strong id="sum-in">--:--</strong></div>
-                        <div class="summary-item"><span>Break Start</span><strong id="sum-bs">--:--</strong></div>
-                        <div class="summary-item"><span>Break End</span><strong id="sum-be">--:--</strong></div>
-                        <div class="summary-item"><span>Check Out</span><strong id="sum-out">--:--</strong></div>
+                        <div class="summary-item"><span><?= esc($statLabels['check_in'] ?? 'Check In') ?></span><strong id="sum-in">--:--</strong></div>
+                        <div class="summary-item"><span><?= esc($statLabels['break_start'] ?? 'Break Start') ?></span><strong id="sum-bs">--:--</strong></div>
+                        <div class="summary-item"><span><?= esc($statLabels['break_end'] ?? 'Break End') ?></span><strong id="sum-be">--:--</strong></div>
+                        <div class="summary-item"><span><?= esc($statLabels['check_out'] ?? 'Check Out') ?></span><strong id="sum-out">--:--</strong></div>
                     </div>
                     <div class="work-metrics">
                         <div class="metric"><span>Worked</span><strong id="sum-worked">--</strong></div>
                         <div class="metric"><span>Break</span><strong id="sum-break">--</strong></div>
-                        <div class="metric"><span>Status</span><strong id="sum-status">Not Checked In</strong></div>
+                        <div class="metric"><span>Status</span><strong id="sum-status"><?= esc($statStatusNotIn) ?></strong></div>
                     </div>
                 </div>
                 <div class="panel">

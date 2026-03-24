@@ -9,10 +9,14 @@
 document.addEventListener('DOMContentLoaded', function () {
     const locations = <?= $locations ?>;
     const liveData  = <?= $liveData ?>;
+    const mapTileUrl = <?= json_encode($mapTileUrl, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+    const mapAttribution = <?= json_encode($mapAttribution, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+    const mapSubdomains = <?= json_encode($mapSubdomains, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 
     const map = L.map('live-map').setView([23.0225, 72.5714], 14);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
+    L.tileLayer(mapTileUrl, {
+        attribution: mapAttribution,
+        subdomains: mapSubdomains || 'abc',
     }).addTo(map);
 
     locations.forEach(loc => {

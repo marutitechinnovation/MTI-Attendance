@@ -4,6 +4,8 @@ use CodeIgniter\Router\RouteCollection;
 
 /** @var RouteCollection $routes */
 
+$routes->get('manifest.webmanifest', 'ManifestWeb::index');
+
 // Public Auth
 $routes->get('/login',  'Auth::login');
 $routes->post('/login', 'Auth::loginPost');

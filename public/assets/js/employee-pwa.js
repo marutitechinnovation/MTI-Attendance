@@ -3,6 +3,27 @@
     if (!app) return;
 
     const baseUrl = app.dataset.baseUrl || "";
+
+    const DEFAULT_SCAN_LABELS = {
+        check_in: "Check In",
+        break_start: "Break Start",
+        break_end: "Break End",
+        check_out: "Check Out",
+    };
+    const DEFAULT_STATUS_LABELS = {
+        working: "Working",
+        on_break: "On Break",
+        complete: "Shift Complete",
+        not_in: "Not Checked In",
+    };
+    let pwaConfigRaw = {};
+    try {
+        pwaConfigRaw = JSON.parse(app.dataset.pwaConfig || "{}");
+    } catch (_) {
+        pwaConfigRaw = {};
+    }
+    const scanLabels = { ...DEFAULT_SCAN_LABELS, ...(pwaConfigRaw.scanLabels || {}) };
+    const statusLabels = { ...DEFAULT_STATUS_LABELS, ...(pwaConfigRaw.statusLabels || {}) };
     const storageKey = "mti_employee_session_v1";
     let deferredPrompt = null;
     let qrScanner = null;
@@ -204,28 +225,22 @@
         document.getElementById("sum-break").textContent = minsToText(breakMins);
 
         const last = records.length ? records[records.length - 1] : null;
-        let status = "Not Checked In";
-        if (last?.type === "check_in" || last?.type === "break_end") status = "Working";
-        if (last?.type === "break_start") status = "On Break";
-        if (last?.type === "check_out") status = "Shift Complete";
+        let status = statusLabels.not_in;
+        if (last?.type === "check_in" || last?.type === "break_end") status = statusLabels.working;
+        if (last?.type === "break_start") status = statusLabels.on_break;
+        if (last?.type === "check_out") status = statusLabels.complete;
         document.getElementById("sum-status").textContent = status;
     }
 
     function scanLabel(type) {
-        const map = {
-            check_in: "Check In",
-            break_start: "Break Start",
-            break_end: "Break End",
-            check_out: "Check Out",
-        };
-        return map[type] || type;
+        return scanLabels[type] || type;
     }
 
     function statusFromLastType(type) {
-        if (type === "check_in" || type === "break_end") return { label: "Working", cls: "working" };
-        if (type === "break_start") return { label: "On Break", cls: "break" };
-        if (type === "check_out") return { label: "Shift Complete", cls: "complete" };
-        return { label: "Not Checked In", cls: "" };
+        if (type === "check_in" || type === "break_end") return { label: statusLabels.working, cls: "working" };
+        if (type === "break_start") return { label: statusLabels.on_break, cls: "break" };
+        if (type === "check_out") return { label: statusLabels.complete, cls: "complete" };
+        return { label: statusLabels.not_in, cls: "" };
     }
 
     function renderNextAction(records) {
@@ -408,8 +423,8 @@
                 "Choose Action",
                 "What do you want to record now?",
                 [
-                    { label: "Break Start", value: "break_start", className: "ghost" },
-                    { label: "Check Out", value: "check_out", className: "danger" },
+                    { label: scanLabels.break_start, value: "break_start", className: "ghost" },
+                    { label: scanLabels.check_out, value: "check_out", className: "danger" },
                     { label: "Cancel", value: null, className: "ghost" },
                 ]
             );
@@ -417,7 +432,7 @@
         }
         const ok = await showModal(
             "Confirm Scan",
-            `Record ${next.replace("_", " ")} now?`,
+            `Record ${scanLabel(next)} now?`,
             [
                 { label: "Cancel", value: false, className: "ghost" },
                 { label: "Confirm", value: true },
