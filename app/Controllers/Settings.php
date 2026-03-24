@@ -88,6 +88,12 @@ class Settings extends BaseController
             }
         }
 
+        $qrRot = $this->request->getPost('qr_rotating_interval_seconds');
+        if ($qrRot !== null && $qrRot !== '') {
+            $v = max(5, min(600, (int) $qrRot));
+            $this->model->saveSetting('qr_rotating_interval_seconds', (string) $v);
+        }
+
         $weekendDays = $this->request->getPost('weekend_days');
         if (is_array($weekendDays)) {
             $this->model->saveSetting('weekend_days', json_encode($weekendDays));

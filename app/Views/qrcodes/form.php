@@ -10,6 +10,39 @@
         <form method="POST" action="<?= base_url($qrcode ? 'qr-codes/update/' . $qrcode['id'] : 'qr-codes/store') ?>">
             <?= csrf_field() ?>
             <div class="row g-3 mb-3">
+                <?php if (empty($qrcode)) : ?>
+                <div class="col-12">
+                    <label class="form-label fw-medium d-block">QR type <span class="text-danger">*</span></label>
+                    <div class="d-flex flex-wrap gap-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="qr_mode" id="qr-mode-static" value="static"
+                                   <?= old('qr_mode', 'static') === 'static' ? 'checked' : '' ?> required>
+                            <label class="form-check-label" for="qr-mode-static">
+                                <strong>Static</strong> — print or sticker; token never changes.
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="qr_mode" id="qr-mode-rotating" value="rotating"
+                                   <?= old('qr_mode') === 'rotating' ? 'checked' : '' ?>>
+                            <label class="form-check-label" for="qr-mode-rotating">
+                                <strong>Linked (browser)</strong> — open a live page; scan token refreshes on a timer and after each successful scan.
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-text">Interval is set in Admin → Settings (default 15 seconds).</div>
+                </div>
+                <?php else : ?>
+                <div class="col-12">
+                    <label class="form-label fw-medium text-muted">QR type (fixed)</label>
+                    <p class="mb-0 small">
+                        <?php if (($qrcode['qr_mode'] ?? 'static') === 'rotating') : ?>
+                            <span class="badge bg-info-subtle text-info border border-info-subtle">Linked / rotating</span>
+                        <?php else : ?>
+                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Static</span>
+                        <?php endif; ?>
+                    </p>
+                </div>
+                <?php endif; ?>
                 <div class="col-md-6">
                     <label class="form-label fw-medium">Location Name <span class="text-danger">*</span></label>
                     <input type="text" name="location_name" class="form-control" required

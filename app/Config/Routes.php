@@ -16,6 +16,9 @@ $routes->get('/',       'Landing::index');
 $routes->get('/privacy',  'Landing::privacy');
 $routes->post('/contact', 'Landing::submitContact');
 
+// Public linked (rotating) QR — open in browser on a tablet/kiosk
+$routes->get('qr/v/(:segment)', 'QrDisplay::live/$1');
+
 // Employee PWA-style web app (mobile-first)
 $routes->get('/employee',                    'EmployeeApp::index');
 $routes->get('/employee/login',              'EmployeeApp::index');
@@ -93,6 +96,7 @@ $routes->group('api', function ($routes) {
     $routes->post('qr-codes',           'Api\QRCodeApi::create');
     $routes->put('qr-codes/(:num)',     'Api\QRCodeApi::update/$1');
     $routes->delete('qr-codes/(:num)', 'Api\QRCodeApi::delete/$1');
+    $routes->get('qr/live-token/(:segment)', 'Api\QrLiveApi::token/$1');
 
     $routes->get('reports/daily',        'Api\ReportApi::daily');
     $routes->get('reports/monthly',      'Api\ReportApi::monthly');

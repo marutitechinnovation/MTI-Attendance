@@ -5,13 +5,30 @@
     <!-- QR Image Card -->
     <div class="col-md-4">
         <div class="card text-center h-100">
-            <div class="card-header fw-semibold">
-                <i class="bi bi-qr-code text-primary me-2"></i><?= esc($qrcode['location_name']) ?>
+            <div class="card-header fw-semibold d-flex align-items-center justify-content-center gap-2 flex-wrap">
+                <span><i class="bi bi-qr-code text-primary me-2"></i><?= esc($qrcode['location_name']) ?></span>
+                <?php if (!empty($liveUrl)) : ?>
+                    <span class="badge bg-info-subtle text-info border border-info-subtle">Linked / rotating</span>
+                <?php else : ?>
+                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Static</span>
+                <?php endif; ?>
             </div>
             <div class="card-body">
+                <?php if (!empty($liveUrl)) : ?>
+                    <div class="alert alert-info text-start small py-2 mb-3">
+                        This QR opens a <strong>web page</strong>. On a tablet or PC, open the link below (or scan this QR with a normal camera). Employees must use the <strong>attendance app</strong> to scan the <strong>inner</strong> code on that page — not this outer QR with the app.
+                    </div>
+                    <p class="small text-muted mb-1">Live page URL</p>
+                    <div class="input-group input-group-sm mb-3">
+                        <input type="text" class="form-control font-monospace small" readonly id="live-url-input" value="<?= esc($liveUrl) ?>">
+                        <button class="btn btn-outline-primary" type="button" id="copy-live-url"><i class="bi bi-clipboard"></i></button>
+                    </div>
+                    <p class="small text-muted mb-1">Outer QR (opens browser)</p>
+                <?php else : ?>
+                    <p class="small text-muted mb-1">Scan token (unchanging)</p>
+                    <code class="small d-block mb-3 text-break"><?= esc($qrcode['token']) ?></code>
+                <?php endif; ?>
                 <img src="<?= base_url($qrImage) ?>" alt="QR Code" class="qr-img img-fluid mb-3 rounded">
-                <p class="small text-muted mb-1">Token:</p>
-                <code class="small"><?= esc($qrcode['token']) ?></code>
                 <div class="d-flex justify-content-center gap-3 mt-2 small text-muted">
                     <span><i class="bi bi-geo-alt me-1"></i><?= $qrcode['latitude'] ?>, <?= $qrcode['longitude'] ?></span>
                     <span><i class="bi bi-bullseye me-1"></i><?= $qrcode['geofence_radius'] ?>m radius</span>
@@ -146,6 +163,18 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const copyBtn = document.getElementById('copy-live-url');
+    const liveInp = document.getElementById('live-url-input');
+    if (copyBtn && liveInp) {
+        copyBtn.addEventListener('click', function() {
+            liveInp.select();
+            navigator.clipboard.writeText(liveInp.value).then(function() {
+                copyBtn.innerHTML = '<i class="bi bi-check2"></i>';
+                setTimeout(function() { copyBtn.innerHTML = '<i class="bi bi-clipboard"></i>'; }, 1500);
+            });
+        });
+    }
+
     const lat    = <?= $qrcode['latitude']  ?? 23.0225 ?>;
     const lng    = <?= $qrcode['longitude'] ?? 72.5714 ?>;
     const radius = <?= $qrcode['geofence_radius'] ?>;

@@ -21,13 +21,32 @@ class QRCodeApi extends ResourceController
 
     public function create()
     {
-        $body  = $this->request->getJSON(true);
+        $body = $this->request->getJSON(true) ?? [];
+        $mode = isset($body['qr_mode']) && $body['qr_mode'] === 'rotating' ? 'rotating' : 'static';
+
         $token = $this->model->generateToken();
-        $body['token']     = $token;
-        $body['is_active'] = 1;
+        $slug  = null;
+        $rotAt = null;
+        if ($mode === 'rotating') {
+            $slug  = $this->model->generateUniquePublicSlug();
+            $rotAt = date('Y-m-d H:i:s');
+        }
+
+        $body['token']                 = $token;
+        $body['is_active']             = 1;
+        $body['qr_mode']               = $mode;
+        $body['public_slug']           = $slug;
+        $body['last_token_rotated_at'] = $rotAt;
+
         $id = $this->model->insert($body);
 
-        return $this->respondCreated(['status' => 'success', 'id' => $id, 'token' => $token]);
+        $out = ['status' => 'success', 'id' => $id, 'token' => $token, 'qr_mode' => $mode];
+        if ($slug !== null) {
+            $out['public_slug'] = $slug;
+            $out['live_url']    = site_url('qr/v/' . $slug);
+        }
+
+        return $this->respondCreated($out);
     }
 
     public function update($id = null)

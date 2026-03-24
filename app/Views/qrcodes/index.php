@@ -15,6 +15,7 @@
             <thead>
                 <tr>
                     <th>Location</th>
+                    <th>Type</th>
                     <th>Token</th>
                     <th>Radius</th>
                     <th>Coordinates</th>
@@ -26,6 +27,13 @@
             <?php foreach ($qrcodes as $qr): ?>
                 <tr>
                     <td><i class="bi bi-geo-alt text-primary me-1"></i><?= esc($qr['location_name']) ?></td>
+                    <td>
+                        <?php if (($qr['qr_mode'] ?? 'static') === 'rotating') : ?>
+                            <span class="badge bg-info-subtle text-info border border-info-subtle">Linked</span>
+                        <?php else : ?>
+                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Static</span>
+                        <?php endif; ?>
+                    </td>
                     <td><code class="small text-muted"><?= substr($qr['token'], 0, 12) ?>…</code></td>
                     <td><span class="badge bg-info-subtle text-info border border-info-subtle"><?= $qr['geofence_radius'] ?>m</span></td>
                     <td class="small"><?= $qr['latitude'] ? round($qr['latitude'], 4) . ', ' . round($qr['longitude'], 4) : '—' ?></td>

@@ -102,6 +102,9 @@ class AttendanceApi extends ResourceController
             'date'            => date('Y-m-d'),
         ]);
 
+        if (($qr['qr_mode'] ?? 'static') === 'rotating') {
+            $qrModel->rotateToken((int) $qr['id']);
+        }
 
         return $this->respond([
             'status'          => $geofenceStatus === 'flagged' ? 'flagged' : 'success',

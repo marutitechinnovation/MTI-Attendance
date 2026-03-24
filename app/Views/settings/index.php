@@ -44,6 +44,12 @@
                            value="<?= esc($settings['default_geofence_radius'] ?? 50) ?>">
                     <div class="form-text">Applied to new QR codes unless overridden per location.</div>
                 </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-medium">Linked QR — token refresh (seconds)</label>
+                    <input type="number" name="qr_rotating_interval_seconds" class="form-control" min="5" max="600"
+                           value="<?= esc($settings['qr_rotating_interval_seconds'] ?? 15) ?>">
+                    <div class="form-text">How often the scan code rotates on the live browser page (5–600). Also rotates immediately after each successful attendance scan.</div>
+                </div>
                 <div class="col-12 mt-4">
                     <label class="form-label fw-medium">Standard Weekend Days</label>
                     <div class="form-text mb-2">Select the days that are considered weekends (non-working days).</div>
