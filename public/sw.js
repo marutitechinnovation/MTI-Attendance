@@ -1,7 +1,6 @@
-const CACHE_NAME = "mti-employee-v3";
+const CACHE_NAME = "mti-employee-v4";
 const APP_SHELL = [
   "/employee",
-  "/employee/login",
   "/employee/dashboard",
   "/employee/attendance",
   "/employee/calendar",

@@ -41,7 +41,6 @@
         "/employee/attendance": "attendance",
         "/employee/calendar": "calendar",
         "/employee/profile": "profile",
-        "/employee/login": "dashboard",
     };
 
     function loadSession() {
@@ -441,6 +440,10 @@
         return ok ? next : null;
     }
 
+    function isWideViewport() {
+        return window.matchMedia("(min-width: 768px)").matches;
+    }
+
     async function onLoginSubmit(e) {
         e.preventDefault();
         const err = document.getElementById("login-error");
@@ -465,8 +468,16 @@
             saveSession(body);
             await initAuthedView();
         } catch (error) {
-            err.textContent = error.message || "Login failed";
-            err.classList.remove("hidden");
+            const raw = error.message || "Login failed";
+            /* Desktop/tablet: avoid loud API-specific errors; phones get full detail. */
+            if (isWideViewport()) {
+                err.textContent =
+                    "Could not sign in. Check your username and password, or use your phone for the best experience.";
+                err.classList.remove("hidden");
+            } else {
+                err.textContent = raw;
+                err.classList.remove("hidden");
+            }
         } finally {
             btn.disabled = false;
             btn.textContent = "Sign In";
@@ -484,6 +495,7 @@
         if (!state.session?.data?.id) {
             msg.textContent = "Session expired, please login again.";
             clearSession();
+            window.history.replaceState({}, "", "/employee");
             setScreen("login");
             return false;
         }
@@ -687,7 +699,7 @@
             if (!ok) return;
             stopScanner();
             clearSession();
-            window.history.replaceState({}, "", "/employee/login");
+            window.history.replaceState({}, "", "/employee");
             setScreen("login");
         });
 
@@ -730,7 +742,7 @@
             setTab(initial);
         });
     } else {
-        window.history.replaceState({}, "", "/employee/login");
+        window.history.replaceState({}, "", "/employee");
         setScreen("login");
     }
 })();

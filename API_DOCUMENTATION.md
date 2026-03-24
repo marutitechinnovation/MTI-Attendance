@@ -35,7 +35,7 @@
 
 ## 0. Auth APIs
 
-Used by the **mobile app** to authenticate employees. Credentials (username + bcrypt password) can be created via the **public signup page** (`/signup`), or managed from the **web admin panel** (Employees → Create/Edit).
+Used by the **mobile app** to authenticate employees. Credentials (username + bcrypt password) are created by administrators from the **web admin panel** (Employees → Add / Edit).
 
 ---
 

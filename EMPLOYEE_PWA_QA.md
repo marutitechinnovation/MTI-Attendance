@@ -4,7 +4,7 @@ Use this checklist before production rollout of the employee PWA.
 
 ## 1) Access and Install
 
-- Open `http://localhost:8082/employee/login` on Android Chrome and desktop Chrome.
+- Open `http://localhost:8082/employee` (or `http://localhost:8082/login` then **Open employee web app**) on Android Chrome and desktop Chrome.
 - Confirm app shell loads and no blank screen appears.
 - Confirm install button appears where supported.
 - Install the PWA and relaunch from home screen icon.
@@ -15,7 +15,7 @@ Use this checklist before production rollout of the employee PWA.
 - Login with valid employee credentials.
 - Verify invalid username/password shows clear error.
 - Verify logout requires confirmation.
-- Verify logged-out state redirects to `/employee/login`.
+- Verify logged-out state uses URL `/employee` (not `/employee/login`, which redirects to `/login`).
 - Reload page after login and confirm session persists.
 
 ## 3) Navigation and Routing
@@ -80,7 +80,7 @@ Use this checklist before production rollout of the employee PWA.
 Prerequisite: run `php spark migrate` so new `settings` keys exist (see migration `AddBrandingMapStatsSettings`).
 
 - Open **Admin → Settings** and save; confirm the green success alert appears.
-- Under **Employee PWA — name & colors**, change app name, short name, theme/background/accent hex. Reload `/employee/login` and confirm login title, meta `theme-color`, and colors update (icon/logo assets unchanged).
+- Under **Employee PWA — name & colors**, change app name, short name, theme/background/accent hex. Reload `/employee` and confirm login title, meta `theme-color`, and colors update (icon/logo assets unchanged).
 - Open `GET /manifest.webmanifest` (same origin) and confirm `name`, `short_name`, `theme_color`, and `background_color` match Settings.
 - Under **Live map**, keep **OpenStreetMap**, open **Admin → Map**, confirm tiles load.
 - Set **Custom** tile URL (with `{z}` `{x}` `{y}` and `{apikey}` if needed), save a key, reload Map; confirm tiles load. Toggle **Remove saved map API key** and save; confirm custom tiles fail or fall back as expected until a key is set again.

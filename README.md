@@ -11,8 +11,7 @@ A QR-based employee attendance management system. Employees scan QR codes via mo
 - 🕒 **Auto-Checkout Recovery** — Forgetting to checkout automatically triggers a 24-hour auto-checkout
 - 📍 **Geofencing** — Validate employee is within allowed radius of QR location
 - 🗺️ **Live Map** — Leaflet.js map showing all QR locations & live attendance
-- 👤 **Employee Management** — Add, edit, deactivate employees
-- 📋 **Self-Registration** — Public signup page for new employees
+- 👤 **Employee Management** — Add, edit, deactivate employees (accounts created by admins only)
 - 🔳 **QR Code Management** — Generate, print, and manage QR codes per location
 - 📊 **Attendance Logs** — Filter by date, employee, department; export CSV/Excel
 - 💰 **Monthly Payroll Report** — Days worked, absent, late; export PDF/Excel
@@ -65,9 +64,10 @@ docker exec -it mti_attendance_app php spark db:seed AttendanceSeeder
 
 | Service | URL |
 |---|---|
-| 🌐 Web Admin Panel | http://localhost:8082 |
-| 📱 Employee PWA | http://localhost:8082/employee/login |
-| 🧑‍💻 Employee Signup | http://localhost:8082/signup |
+| 🌐 Web Admin Panel | http://localhost:8082/dashboard (after login) |
+| 🔐 Admin login | http://localhost:8082/admin/login |
+| 🧑‍💻 Employee gateway | http://localhost:8082/login |
+| 📱 Employee PWA | http://localhost:8082/employee |
 | 🗄️ phpMyAdmin | http://localhost:8083 |
 | 🔌 API Base URL | http://localhost:8082/api |
 
@@ -85,7 +85,7 @@ Password: give me
 MTI Attandance Web/
 ├── app/
 │   ├── Controllers/
-│   │   ├── Auth.php              # Admin web login & Public signup
+│   │   ├── Auth.php              # Admin login & public employee gateway
 │   │   ├── Dashboard.php         # Dashboard page
 │   │   ├── Employees.php         # Employee management
 │   │   ├── QRCodes.php           # QR code management
@@ -139,9 +139,11 @@ MTI Attandance Web/
 
 ## 📱 Employee PWA
 
-Employee mobile web app is available at:
+Employee sign-in:
 
-- `/employee/login`
+- `/login` — public gateway (opens staff web app)
+- `/employee` — PWA shell (bookmarked paths under `/employee/…`)
+- `/employee/login` — redirects to `/login`
 
 Current employee PWA includes:
 

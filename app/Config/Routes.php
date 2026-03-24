@@ -6,11 +6,10 @@ use CodeIgniter\Router\RouteCollection;
 
 $routes->get('manifest.webmanifest', 'ManifestWeb::index');
 
-// Public Auth
-$routes->get('/login',  'Auth::login');
-$routes->post('/login', 'Auth::loginPost');
-$routes->get('/signup', 'Auth::signup');
-$routes->post('/signup', 'Auth::signupPost');
+// Public — employee gateway only (admin uses admin/login, not linked on site)
+$routes->get('/login', 'Auth::login');
+$routes->get('admin/login', 'Auth::adminLogin');
+$routes->post('admin/login', 'Auth::adminLoginPost');
 $routes->get('/logout', 'Auth::logout');
 $routes->get('/',       'Landing::index');
 $routes->get('/privacy',  'Landing::privacy');
@@ -19,9 +18,9 @@ $routes->post('/contact', 'Landing::submitContact');
 // Public linked (rotating) QR — open in browser on a tablet/kiosk
 $routes->get('qr/v/(:segment)', 'QrDisplay::live/$1');
 
-// Employee PWA-style web app (mobile-first)
+// Employee PWA-style web app (mobile-first). /employee/login → public /login gateway.
+$routes->get('/employee/login',             'Auth::employeeLoginRedirect');
 $routes->get('/employee',                    'EmployeeApp::index');
-$routes->get('/employee/login',              'EmployeeApp::index');
 $routes->get('/employee/dashboard',          'EmployeeApp::index');
 $routes->get('/employee/attendance',         'EmployeeApp::index');
 $routes->get('/employee/calendar',           'EmployeeApp::index');

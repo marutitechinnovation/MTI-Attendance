@@ -442,6 +442,45 @@ button.danger {
     font-weight: 700;
 }
 
+.login-flash-banner {
+    width: min(400px, 100%);
+    margin: 0 auto 16px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.4;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.login-flash-banner--error {
+    background: #FFEBEE;
+    color: #B71C1C;
+    border: 1px solid #FFCDD2;
+}
+
+.admin-login-hint {
+    display: none;
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.admin-login-hint a {
+    color: #fff;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+@media (min-width: 768px) {
+    .admin-login-hint {
+        display: block;
+    }
+}
+
 .error {
     color: var(--danger);
     margin: 10px 0 0;

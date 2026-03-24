@@ -153,7 +153,7 @@
         .hero h1 span { color: var(--accent-light); display: inline-block; } /* Soft light blue accent */
         .hero p { font-size: 1.25rem; color: rgba(255,255,255,0.9); margin-bottom: 2.5rem; }
         
-        .hero-buttons { display: flex; gap: 1rem; justify-content: center; }
+        .hero-buttons { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
         .hero-buttons .btn-primary { 
             background: var(--white); 
             color: var(--primary-color); 
@@ -174,8 +174,6 @@
             color: var(--white); 
         }
         
-        .hero-buttons { display: flex; gap: 1rem; justify-content: center; }
-
         /* Showcase Section */
         .showcase { padding: 6rem 5%; background: var(--bg-light); border-bottom: 1px solid rgba(0,0,0,0.05); }
         .showcase .section-header { text-align: center; margin-bottom: 4rem; }
@@ -231,6 +229,18 @@
             padding-left: 1.5rem;
             color: var(--text-main);
         }
+        .showcase-text a {
+            color: var(--primary-color);
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(67, 97, 238, 0.35);
+            transition: var(--transition);
+        }
+        .showcase-text a:hover {
+            color: var(--primary-dark);
+            border-bottom-color: var(--primary-dark);
+        }
+
         .showcase-text ul li::before {
             content: '✓';
             color: var(--primary-color);
@@ -351,6 +361,7 @@
         <div class="nav-links">
             <a href="#showcase">Platform</a>
             <a href="#contact">Contact</a>
+            <a href="<?= base_url('employee') ?>">Employee app (PWA)</a>
             <a href="<?= base_url('login') ?>" class="btn btn-outline">Sign In</a>
         </div>
     </nav>
@@ -363,6 +374,7 @@
             <div class="hero-buttons">
                 <a href="<?= base_url('login') ?>" class="btn btn-primary" style="animation: pulse 2s infinite ease-in-out;">Get Started Now</a>
                 <a href="#showcase" class="btn btn-outline">See Platform</a>
+                <a href="<?= base_url('employee') ?>" class="btn btn-outline">Employee app (PWA)</a>
             </div>
         </div>
     </section>
@@ -419,6 +431,7 @@
                         <li>Real-time sync with web portal</li>
                         <li>Push notifications for shift updates</li>
                     </ul>
+                    <p style="margin-top: 1rem;">Prefer the browser? Open the <a href="<?= base_url('employee') ?>">installable employee web app (PWA)</a>.</p>
                 </div>
                 <div class="showcase-image">
                     <div class="image-placeholder mobile-placeholder" style="padding:0; border:none; background:transparent; height:auto;">
@@ -504,7 +517,7 @@
 
     <!-- Footer -->
     <footer>
-        <p>&copy; <?= date('Y') ?> MTI Attendance. All rights reserved. | <a href="<?= base_url('privacy') ?>" target="_blank" style="color: rgba(255,255,255,0.6); text-decoration: none;">Privacy Policy</a></p>
+        <p>&copy; <?= date('Y') ?> MTI Attendance. All rights reserved. | <a href="<?= base_url('employee') ?>" style="color: rgba(255,255,255,0.6); text-decoration: none;">Employee app (PWA)</a> | <a href="<?= base_url('privacy') ?>" target="_blank" style="color: rgba(255,255,255,0.6); text-decoration: none;">Privacy Policy</a></p>
     </footer>
 
 

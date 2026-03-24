@@ -40,16 +40,26 @@
                 <p>Sign in with your employee account.</p>
             </div>
 
+            <?php if (!empty($loginBannerMessage)): ?>
+                <div id="login-flash-banner" class="login-flash-banner <?= !empty($loginBannerIsError) ? 'login-flash-banner--error' : '' ?>" role="status">
+                    <?= esc($loginBannerMessage) ?>
+                </div>
+            <?php endif; ?>
+
             <form id="login-form" class="card">
                 <label for="username">Username</label>
-                <input id="username" name="username" type="text" maxlength="50" required>
+                <input id="username" name="username" type="text" maxlength="50" required autocomplete="username">
 
                 <label for="password">Password</label>
-                <input id="password" name="password" type="password" maxlength="64" required>
+                <input id="password" name="password" type="password" maxlength="64" required autocomplete="current-password">
 
                 <button id="login-btn" type="submit">Sign In</button>
-                <p id="login-error" class="error hidden"></p>
+                <p id="login-error" class="error login-error-msg hidden" aria-live="polite"></p>
             </form>
+
+            <p class="admin-login-hint">Administrator?
+                <a href="<?= esc($adminLoginUrl ?? base_url('admin/login')) ?>">Open admin login</a>
+            </p>
         </div>
     </section>
 

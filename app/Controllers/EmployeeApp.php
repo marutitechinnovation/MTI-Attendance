@@ -44,16 +44,24 @@ class EmployeeApp extends BaseController
             ],
         ];
 
+        $flashSuccess       = session()->getFlashdata('success');
+        $flashError         = session()->getFlashdata('error');
+        $loginBannerMessage = is_string($flashSuccess) ? $flashSuccess : (is_string($flashError) ? $flashError : null);
+        $loginBannerIsError = is_string($flashError) && ! is_string($flashSuccess);
+
         return view('employee/app', [
-            'pageTitle'        => $s['employee_app_page_title'],
-            'brandName'        => $s['employee_app_name'],
-            'shortAppName'     => $s['employee_app_short_name'],
-            'themeColor'       => $s['employee_app_theme_color'],
-            'backgroundColor'  => $s['employee_app_background_color'],
-            'accentColor'      => $s['employee_app_accent_color'],
-            'statLabels'       => $pwaConfig['scanLabels'],
-            'statStatusNotIn'  => $s['stat_status_not_in'],
-            'pwaConfigJson'    => json_encode($pwaConfig, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_UNESCAPED_UNICODE),
+            'pageTitle'           => $s['employee_app_page_title'],
+            'brandName'           => $s['employee_app_name'],
+            'shortAppName'        => $s['employee_app_short_name'],
+            'themeColor'          => $s['employee_app_theme_color'],
+            'backgroundColor'     => $s['employee_app_background_color'],
+            'accentColor'         => $s['employee_app_accent_color'],
+            'statLabels'          => $pwaConfig['scanLabels'],
+            'statStatusNotIn'     => $s['stat_status_not_in'],
+            'pwaConfigJson'       => json_encode($pwaConfig, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_UNESCAPED_UNICODE),
+            'loginBannerMessage'  => $loginBannerMessage,
+            'loginBannerIsError'  => $loginBannerIsError,
+            'adminLoginUrl'       => base_url('admin/login'),
         ]);
     }
 }
