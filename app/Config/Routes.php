@@ -14,6 +14,14 @@ $routes->get('/',       'Landing::index');
 $routes->get('/privacy',  'Landing::privacy');
 $routes->post('/contact', 'Landing::submitContact');
 
+// Employee PWA-style web app (mobile-first)
+$routes->get('/employee',                    'EmployeeApp::index');
+$routes->get('/employee/login',              'EmployeeApp::index');
+$routes->get('/employee/dashboard',          'EmployeeApp::index');
+$routes->get('/employee/attendance',         'EmployeeApp::index');
+$routes->get('/employee/calendar',           'EmployeeApp::index');
+$routes->get('/employee/profile',            'EmployeeApp::index');
+
 // Admin Web Panel (protected by session auth filter)
 $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('dashboard',                    'Dashboard::index');

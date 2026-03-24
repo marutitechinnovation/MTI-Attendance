@@ -66,6 +66,7 @@ docker exec -it mti_attendance_app php spark db:seed AttendanceSeeder
 | Service | URL |
 |---|---|
 | 🌐 Web Admin Panel | http://localhost:8082 |
+| 📱 Employee PWA | http://localhost:8082/employee/login |
 | 🧑‍💻 Employee Signup | http://localhost:8082/signup |
 | 🗄️ phpMyAdmin | http://localhost:8083 |
 | 🔌 API Base URL | http://localhost:8082/api |
@@ -123,11 +124,37 @@ MTI Attandance Web/
 │   └── assets/
 │       ├── css/style.css
 │       └── js/app.js
+├── app/Views/employee/app.php     # Employee PWA shell
+├── public/assets/js/employee-pwa.js
+├── public/assets/css/employee-pwa.css
+├── public/manifest.webmanifest
+├── public/sw.js
 ├── docker-compose.yml
 ├── Dockerfile
 ├── .env.example
 └── README.md
 ```
+
+---
+
+## 📱 Employee PWA
+
+Employee mobile web app is available at:
+
+- `/employee/login`
+
+Current employee PWA includes:
+
+- login/logout flow using existing employee API
+- dashboard with today timeline and worked/break summary
+- attendance scan flow with camera QR support + geolocation
+- monthly attendance history and status chips
+- holidays and profile tabs
+- installable PWA manifest and service worker caching
+
+For rollout verification, use:
+
+- `EMPLOYEE_PWA_QA.md`
 
 ---
 
