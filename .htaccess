@@ -1,0 +1,14 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # If hosting points the domain to project root, route everything into /public.
+    # Avoid looping when the request is already under /public.
+    RewriteCond %{REQUEST_URI} !^/public/ [NC]
+
+    # Keep direct access to real files/folders at the root (rare, but safe).
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    RewriteRule ^(.*)$ public/$1 [L,NC]
+</IfModule>
+
