@@ -1,4 +1,4 @@
-const CACHE_NAME = "mti-employee-v4";
+const CACHE_NAME = "mti-employee-v5";
 const APP_SHELL = [
   "/employee",
   "/employee/dashboard",
@@ -8,6 +8,7 @@ const APP_SHELL = [
   "/manifest.webmanifest",
   "/assets/css/employee-pwa.css",
   "/assets/js/employee-pwa.js",
+  "/assets/js/html5-qrcode.min.js",
   "/assets/icons/icon-192.svg",
   "/assets/icons/icon-512.svg"
 ];
@@ -45,14 +46,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // API strategy:
-  // - Attendance scan/write endpoints: always network-only
-  // - Read endpoints: network-first with cache fallback
-  if (url.pathname.includes("/api/attendance/scan")) {
-    event.respondWith(fetch(req));
-    return;
-  }
-
+  // API read endpoints: network-first with cache fallback
   if (url.pathname.startsWith("/api/")) {
     event.respondWith(
       fetch(req)
@@ -75,7 +69,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // App shell/static assets: cache-first with network update fallback
+  // App shell / static assets: cache-first with network update fallback
   event.respondWith(
     caches.match(req).then((cached) => {
       if (cached) return cached;
@@ -91,3 +85,65 @@ self.addEventListener("fetch", (event) => {
     })
   );
 });
+
+// ─── Offline Scan Background Sync ────────────────────────────────────────────
+
+self.addEventListener("sync", (event) => {
+  if (event.tag === "sync-attendance-scans") {
+    event.waitUntil(replayScanQueue());
+  }
+});
+
+function swOpenDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open("mti_offline", 1);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains("scan_queue")) {
+        db.createObjectStore("scan_queue", { keyPath: "id", autoIncrement: true });
+      }
+    };
+    req.onsuccess = (e) => resolve(e.target.result);
+    req.onerror   = () => reject(req.error);
+  });
+}
+
+async function replayScanQueue() {
+  let db;
+  try { db = await swOpenDB(); } catch (_) { return; }
+
+  const items = await new Promise((resolve, reject) => {
+    const tx  = db.transaction("scan_queue", "readonly");
+    const req = tx.objectStore("scan_queue").getAll();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror   = () => reject(req.error);
+  });
+
+  if (!items.length) return;
+
+  for (const item of items) {
+    try {
+      const headers = { "Content-Type": "application/json", "Accept": "application/json" };
+      if (item.token) headers["Authorization"] = `Bearer ${item.token}`;
+
+      const res = await fetch("/api/attendance/scan", {
+        method: "POST",
+        headers,
+        body: JSON.stringify(item.payload),
+      });
+
+      if (res.ok) {
+        await new Promise((resolve, reject) => {
+          const tx = db.transaction("scan_queue", "readwrite");
+          tx.objectStore("scan_queue").delete(item.id);
+          tx.oncomplete = resolve;
+          tx.onerror    = () => reject(tx.error);
+        });
+      } else if (res.status === 401) {
+        break; // Token expired — stop; user must log in again
+      }
+    } catch (_) {
+      throw new Error("Still offline"); // Causes sync to retry later
+    }
+  }
+}

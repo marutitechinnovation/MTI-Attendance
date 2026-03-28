@@ -3,6 +3,7 @@
 namespace App\Controllers\Api;
 
 use App\Models\EmployeeModel;
+use App\Libraries\JwtHelper;
 use CodeIgniter\RESTful\ResourceController;
 
 class AuthApi extends ResourceController
@@ -39,16 +40,23 @@ class AuthApi extends ResourceController
             return $this->fail('Account not activated. Contact admin to set your password.', 403);
         }
 
-        // Support bcrypt-hashed passwords and plain passwords (migration period)
-        $valid = password_verify($password, $storedPassword) || ($storedPassword === $password);
+        // Check bcrypt first; fall back to plain-text for accounts not yet migrated
+        $valid = password_verify($password, $storedPassword)
+                 || (!str_starts_with($storedPassword, '$2y$') && $storedPassword === $password);
 
         if (!$valid) {
             return $this->fail('Invalid username or password.', 401);
         }
 
+        $token = JwtHelper::encode([
+            'sub'  => $emp['id'],
+            'code' => $emp['employee_code'],
+        ]);
+
         return $this->respond([
             'status'  => 'success',
             'message' => 'Login successful.',
+            'token'   => $token,
             'data'    => [
                 'id'            => $emp['id'],
                 'employee_code' => $emp['employee_code'],

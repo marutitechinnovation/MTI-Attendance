@@ -75,12 +75,14 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->post('settings',                    'Settings::update');
 });
 
-// REST API (used by mobile app — no session needed)
+// REST API — public endpoints (no auth required)
 $routes->group('api', function ($routes) {
-    // Auth
     $routes->post('auth/login',        'Api\AuthApi::login');
     $routes->post('auth/set-password', 'Api\AuthApi::setPassword');
+});
 
+// REST API — protected endpoints (JWT required)
+$routes->group('api', ['filter' => 'api_auth'], function ($routes) {
     $routes->post('attendance/scan',     'Api\AttendanceApi::scan');
     $routes->get('attendance/today',     'Api\AttendanceApi::today');
     $routes->get('attendance/history',   'Api\AttendanceApi::history');
