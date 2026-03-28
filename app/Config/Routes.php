@@ -77,8 +77,9 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
 
 // REST API — public endpoints (no auth required)
 $routes->group('api', function ($routes) {
-    $routes->post('auth/login',        'Api\AuthApi::login');
-    $routes->post('auth/set-password', 'Api\AuthApi::setPassword');
+    $routes->post('auth/login',              'Api\AuthApi::login');
+    $routes->post('auth/set-password',       'Api\AuthApi::setPassword');
+    $routes->get('qr/live-token/(:segment)', 'Api\QrLiveApi::token/$1'); // kiosk display — no login needed
 });
 
 // REST API — protected endpoints (JWT required)
@@ -97,7 +98,6 @@ $routes->group('api', ['filter' => 'api_auth'], function ($routes) {
     $routes->post('qr-codes',           'Api\QRCodeApi::create');
     $routes->put('qr-codes/(:num)',     'Api\QRCodeApi::update/$1');
     $routes->delete('qr-codes/(:num)', 'Api\QRCodeApi::delete/$1');
-    $routes->get('qr/live-token/(:segment)', 'Api\QrLiveApi::token/$1');
 
     $routes->get('reports/daily',        'Api\ReportApi::daily');
     $routes->get('reports/monthly',      'Api\ReportApi::monthly');

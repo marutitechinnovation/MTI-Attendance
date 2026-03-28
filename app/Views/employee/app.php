@@ -220,6 +220,15 @@
     </div>
 </div>
 
+<!-- Bottom Action Sheet (scan type chooser) -->
+<div id="sheet-backdrop" class="sheet-backdrop hidden">
+    <div class="sheet" role="dialog" aria-modal="true">
+        <div class="sheet-handle"></div>
+        <p class="sheet-title" id="sheet-title">Choose Action</p>
+        <div id="sheet-actions" class="sheet-actions"></div>
+    </div>
+</div>
+
 <script src="<?= base_url('assets/js/html5-qrcode.min.js') ?>"></script>
 <script src="<?= base_url('assets/js/employee-pwa.js') ?>?v=<?= filemtime(FCPATH . 'assets/js/employee-pwa.js') ?>"></script>
 </body>

@@ -470,6 +470,26 @@
         });
     }
 
+    function calcDayStats(items) {
+        const checkIn  = items.find(r => r.type === "check_in");
+        const checkOut = [...items].reverse().find(r => r.type === "check_out");
+        let workedMins = null, breakMins = 0, openBreak = null;
+        if (checkIn) {
+            const end = checkOut ? new Date(checkOut.scanned_at) : null;
+            if (end) workedMins = Math.max(0, Math.round((end - new Date(checkIn.scanned_at)) / 60000));
+        }
+        items.forEach(r => {
+            const d = new Date(r.scanned_at);
+            if (r.type === "break_start") { openBreak = d; }
+            else if (r.type === "break_end" && openBreak) {
+                breakMins += Math.max(0, Math.round((d - openBreak) / 60000));
+                openBreak = null;
+            }
+        });
+        const netMins = workedMins != null ? Math.max(0, workedMins - breakMins) : null;
+        return { workedMins, breakMins, netMins };
+    }
+
     async function loadHistory() {
         if (!state.session?.data?.id) return;
         const now   = new Date();
@@ -478,11 +498,11 @@
             `/attendance/history?employee_id=${state.session.data.id}&from=${apiDate(first)}&to=${apiDate(now)}`,
             { method: "GET" }
         );
-        const list = document.getElementById("history-list");
-        list.innerHTML = "";
+        const wrap = document.getElementById("history-list");
+        wrap.innerHTML = "";
         const rows = body.data || [];
         if (!rows.length) {
-            list.innerHTML = "<li>No history this month.</li>";
+            wrap.innerHTML = `<li class="hist-empty">No attendance records this month.</li>`;
             return;
         }
         const grouped = rows.reduce((acc, row) => {
@@ -491,28 +511,54 @@
             acc[key].push(row);
             return acc;
         }, {});
+
         Object.keys(grouped)
             .sort((a, b) => (a < b ? 1 : -1))
             .forEach((date) => {
-                const li    = document.createElement("li");
-                const items = grouped[date];
-                const scans = items.map((r) => `${scanLabel(r.type)} ${fmtTime(r.scanned_at)}`).join(" • ");
-                const lastType = items.length ? items[items.length - 1].type : null;
-                const flagged  = items.some((r) => r.geofence_status === "flagged");
+                const items    = grouped[date];
+                const lastType = items[items.length - 1]?.type;
+                const flagged  = items.some(r => r.geofence_status === "flagged");
                 const status   = statusFromLastType(lastType);
-                const chipClass = flagged ? "flagged" : status.cls;
-                const chipLabel = flagged ? "Flagged" : status.label;
+                const chipCls  = flagged ? "flagged" : status.cls;
+                const chipLbl  = flagged ? "Flagged"  : status.label;
+                const { workedMins, breakMins, netMins } = calcDayStats(items);
+
+                const d    = new Date(date);
+                const dow  = d.toLocaleDateString(undefined, { weekday: "short" });
+                const dom  = d.toLocaleDateString(undefined, { day: "2-digit", month: "short" });
+
+                const scanRows = items.map(r => {
+                    const dotCls = r.type.replace(/_/g, "-");
+                    const geo    = r.geofence_status === "flagged"
+                        ? `<span class="hc-flag-icon" title="Outside geofence">⚑</span>` : "";
+                    return `<div class="hc-scan-row hc-dot-${dotCls}">
+                        <span class="hc-dot"></span>
+                        <span class="hc-scan-label">${scanLabel(r.type)}</span>
+                        <span class="hc-scan-time">${fmtTime(r.scanned_at)}${geo}</span>
+                    </div>`;
+                }).join("");
+
+                const statsRow = (workedMins != null || breakMins > 0) ? `
+                    <div class="hc-stats">
+                        ${netMins != null ? `<span class="hc-stat"><span>Net</span><strong>${minsToText(netMins)}</strong></span>` : ""}
+                        ${workedMins != null ? `<span class="hc-stat"><span>Gross</span><strong>${minsToText(workedMins)}</strong></span>` : ""}
+                        ${breakMins > 0 ? `<span class="hc-stat"><span>Break</span><strong>${minsToText(breakMins)}</strong></span>` : ""}
+                    </div>` : "";
+
+                const li = document.createElement("li");
+                li.className = "hc";
                 li.innerHTML = `
-                    <div class="history-date">${dateLabel(date)}</div>
-                    <div class="history-row">
-                        <div class="history-head">
-                            <span>${items.length} scans</span>
-                            <span class="status-chip ${chipClass}">${chipLabel}</span>
+                    <div class="hc-header">
+                        <div class="hc-date">
+                            <span class="hc-dow">${dow}</span>
+                            <span class="hc-dom">${dom}</span>
                         </div>
-                        <div class="history-meta">${scans}</div>
+                        <span class="status-chip ${chipCls}">${chipLbl}</span>
                     </div>
+                    <div class="hc-scans">${scanRows}</div>
+                    ${statsRow}
                 `;
-                list.appendChild(li);
+                wrap.appendChild(li);
             });
     }
 
@@ -612,6 +658,49 @@
         return cycle[i + 1];
     }
 
+    function showActionSheet(title, actions) {
+        const backdrop  = document.getElementById("sheet-backdrop");
+        const titleEl   = document.getElementById("sheet-title");
+        const actionsEl = document.getElementById("sheet-actions");
+        titleEl.textContent = title;
+        actionsEl.innerHTML = "";
+        backdrop.classList.remove("hidden");
+
+        return new Promise((resolve) => {
+            function close(value) {
+                backdrop.classList.add("hidden");
+                backdrop.removeEventListener("click", onBackdropClick);
+                resolve(value);
+            }
+
+            function onBackdropClick(e) {
+                if (e.target === backdrop) close(null);
+            }
+
+            actions.forEach((action) => {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "sheet-btn " + (action.className || "");
+
+                if (action.icon !== undefined) {
+                    const iconEl = document.createElement("span");
+                    iconEl.className = "sheet-btn-icon";
+                    iconEl.textContent = action.icon;
+                    btn.appendChild(iconEl);
+                }
+
+                const labelEl = document.createElement("span");
+                labelEl.textContent = action.label;
+                btn.appendChild(labelEl);
+
+                btn.addEventListener("click", () => close(action.value));
+                actionsEl.appendChild(btn);
+            });
+
+            backdrop.addEventListener("click", onBackdropClick);
+        });
+    }
+
     function showModal(title, text, actions, variant = "") {
         const backdrop  = document.getElementById("modal-backdrop");
         const titleEl   = document.getElementById("modal-title");
@@ -643,15 +732,11 @@
         const last = records.length ? records[records.length - 1] : null;
         const next = nextScanType(last?.type);
         if (next === "break_start" || next === "check_out") {
-            return await showModal(
-                "Choose Action",
-                "What do you want to record now?",
-                [
-                    { label: scanLabels.break_start, value: "break_start", className: "ghost" },
-                    { label: scanLabels.check_out,   value: "check_out",   className: "danger" },
-                    { label: "Cancel",               value: null,           className: "ghost" },
-                ]
-            );
+            return await showActionSheet("What do you want to record?", [
+                { label: scanLabels.break_start, value: "break_start", className: "break",    icon: "☕" },
+                { label: scanLabels.check_out,   value: "check_out",   className: "checkout", icon: "🚪" },
+                { label: "Cancel",               value: null,           className: "cancel" },
+            ]);
         }
         const ok = await showModal(
             "Confirm Scan",
