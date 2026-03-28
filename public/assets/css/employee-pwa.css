@@ -7,6 +7,7 @@
     --card: #FFFFFF;
     --danger: #E53935;
     --line: #E5E7EB;
+    --focus: rgba(0, 188, 212, 0.35);
 }
 
 * {
@@ -18,6 +19,15 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     background: var(--bg);
     color: var(--text);
+}
+
+.screen.active {
+    animation: screenFade 180ms ease-out;
+}
+
+@keyframes screenFade {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .offline-banner {
@@ -108,6 +118,18 @@ button {
     font: inherit;
 }
 
+input:focus,
+select:focus,
+button:focus {
+    outline: none;
+}
+
+input:focus-visible,
+select:focus-visible,
+button:focus-visible {
+    box-shadow: 0 0 0 4px var(--focus);
+}
+
 button {
     margin-top: 14px;
     cursor: pointer;
@@ -115,6 +137,21 @@ button {
     color: #fff;
     background: var(--primary);
     font-weight: 600;
+    transition: transform 120ms ease, filter 120ms ease, background-color 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+}
+
+button:active {
+    transform: translateY(1px) scale(0.99);
+}
+
+button:hover {
+    filter: brightness(1.05);
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+    filter: none;
 }
 
 button.ghost {
@@ -126,8 +163,26 @@ button.ghost {
     padding: 8px 12px;
 }
 
+button.ghost:hover {
+    background: rgba(26, 35, 126, 0.06);
+}
+
 button.danger {
     background: var(--danger);
+}
+
+.panel {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    padding: 14px;
+    margin-bottom: 12px;
+    animation: liftIn 220ms ease-out;
+}
+
+@keyframes liftIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .topbar {
@@ -149,14 +204,6 @@ button.danger {
 
 .content {
     padding: 14px 14px 86px;
-}
-
-.panel {
-    background: #fff;
-    border-radius: 14px;
-    border: 1px solid var(--line);
-    padding: 14px;
-    margin-bottom: 12px;
 }
 
 .panel h3,
@@ -237,10 +284,22 @@ button.danger {
 
 .attendance-subtab {
     display: none;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 160ms ease, transform 160ms ease;
+    will-change: opacity, transform;
 }
 
 .attendance-subtab.active {
     display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.attendance-subtab.is-leaving {
+    display: block;
+    opacity: 0;
+    transform: translateY(6px);
 }
 
 .next-action-strip {
@@ -410,10 +469,22 @@ button.danger {
 
 .tab {
     display: none;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 160ms ease, transform 160ms ease;
+    will-change: opacity, transform;
 }
 
 .tab.active {
     display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.tab.is-leaving {
+    display: block;
+    opacity: 0;
+    transform: translateY(6px);
 }
 
 .bottom-nav {
@@ -435,6 +506,11 @@ button.danger {
     margin: 0;
     padding: 12px 4px;
     font-size: 12px;
+    transition: color 140ms ease, transform 120ms ease;
+}
+
+.nav-btn:active {
+    transform: translateY(1px) scale(0.98);
 }
 
 .nav-btn.active {
@@ -506,6 +582,12 @@ button.danger {
     background: #fff;
     border-radius: 14px;
     padding: 16px;
+    animation: modalPop 160ms ease-out;
+}
+
+@keyframes modalPop {
+    from { opacity: 0; transform: translateY(10px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .modal-card.success {

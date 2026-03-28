@@ -71,7 +71,10 @@
         }).then(async (res) => {
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {
-                throw new Error(data.message || data.messages?.error || "Request failed");
+                const err = new Error(extractApiErrorMessage(data) || "Request failed");
+                err.status = res.status;
+                err.payload = data;
+                throw err;
             }
             return data;
         }).catch((error) => {
@@ -82,15 +85,62 @@
         });
     }
 
+    function extractApiErrorMessage(payload) {
+        if (!payload || typeof payload !== "object") return "";
+        if (typeof payload.message === "string" && payload.message.trim()) return payload.message.trim();
+        const errorMsg = payload.messages?.error;
+        if (typeof errorMsg === "string" && errorMsg.trim()) return errorMsg.trim();
+
+        const messages = payload.messages;
+        if (messages && typeof messages === "object") {
+            const parts = [];
+            Object.values(messages).forEach((v) => {
+                if (typeof v === "string" && v.trim()) parts.push(v.trim());
+                else if (Array.isArray(v)) v.forEach((x) => (typeof x === "string" && x.trim() ? parts.push(x.trim()) : null));
+            });
+            if (parts.length) return parts[0];
+        }
+        return "";
+    }
+
+    function friendlyError(error, fallback = "Something went wrong. Please try again.") {
+        if (!error) return fallback;
+        if (!navigator.onLine) return "No internet connection.";
+        const msg = String(error.message || "").trim();
+        const status = error.status;
+
+        if (status === 401 || status === 403) return "Invalid username or password.";
+        if (status === 404) return "Service not found. Please contact admin.";
+        if (status === 422) return msg || "Please check the details and try again.";
+        if (status >= 500) return "Server error. Please try again after some time.";
+
+        if (msg) return msg;
+        return fallback;
+    }
+
     function setScreen(screen) {
         document.getElementById("screen-login").classList.toggle("active", screen === "login");
         document.getElementById("screen-main").classList.toggle("active", screen === "main");
     }
 
     function setTab(tabName) {
+        const nextId = `tab-${tabName}`;
         document.querySelectorAll(".tab").forEach((tab) => {
-            tab.classList.toggle("active", tab.id === `tab-${tabName}`);
+            const isNext = tab.id === nextId;
+            if (isNext) return;
+            if (tab.classList.contains("active")) {
+                tab.classList.add("is-leaving");
+                tab.classList.remove("active");
+                window.setTimeout(() => tab.classList.remove("is-leaving"), 180);
+            } else {
+                tab.classList.remove("is-leaving");
+            }
         });
+        const nextTab = document.getElementById(nextId);
+        if (nextTab) {
+            nextTab.classList.remove("is-leaving");
+            nextTab.classList.add("active");
+        }
         document.querySelectorAll(".nav-btn").forEach((btn) => {
             btn.classList.toggle("active", btn.dataset.tab === tabName);
         });
@@ -112,9 +162,23 @@
 
     function setAttendanceSubtab(name) {
         attendanceSubtab = name;
+        const nextId = `attendance-subtab-${name}`;
         document.querySelectorAll(".attendance-subtab").forEach((el) => {
-            el.classList.toggle("active", el.id === `attendance-subtab-${name}`);
+            const isNext = el.id === nextId;
+            if (isNext) return;
+            if (el.classList.contains("active")) {
+                el.classList.add("is-leaving");
+                el.classList.remove("active");
+                window.setTimeout(() => el.classList.remove("is-leaving"), 180);
+            } else {
+                el.classList.remove("is-leaving");
+            }
         });
+        const next = document.getElementById(nextId);
+        if (next) {
+            next.classList.remove("is-leaving");
+            next.classList.add("active");
+        }
         document.querySelectorAll(".attendance-subtab-btn").forEach((btn) => {
             btn.classList.toggle("active", btn.dataset.attSubtab === name);
         });
@@ -140,13 +204,20 @@
     function fmtDateTime(raw) {
         const date = new Date(raw);
         if (Number.isNaN(date.getTime())) return raw || "-";
-        return date.toLocaleString();
+        return date.toLocaleString(undefined, {
+            year: "numeric",
+            month: "short",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+        });
     }
 
     function fmtTime(raw) {
         const d = new Date(raw);
         if (Number.isNaN(d.getTime())) return "--:--";
-        return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
     }
 
     function minsToText(totalMins) {
@@ -468,16 +539,8 @@
             saveSession(body);
             await initAuthedView();
         } catch (error) {
-            const raw = error.message || "Login failed";
-            /* Desktop/tablet: avoid loud API-specific errors; phones get full detail. */
-            if (isWideViewport()) {
-                err.textContent =
-                    "Could not sign in. Check your username and password, or use your phone for the best experience.";
-                err.classList.remove("hidden");
-            } else {
-                err.textContent = raw;
-                err.classList.remove("hidden");
-            }
+            err.textContent = friendlyError(error, "Could not sign in. Please try again.");
+            err.classList.remove("hidden");
         } finally {
             btn.disabled = false;
             btn.textContent = "Sign In";
@@ -532,7 +595,8 @@
                             method: "POST",
                             body: JSON.stringify(payload),
                         });
-                        msg.textContent = `${body.label || body.type || "Recorded"} at ${body.time || ""}`;
+                        const recordedAt = body.scanned_at ? fmtTime(body.scanned_at) : body.time ? fmtTime(body.time) : "";
+                        msg.textContent = `${body.label || body.type || "Recorded"}${recordedAt ? ` at ${recordedAt}` : ""}`;
                         await showModal(
                             body.status === "flagged" ? "Attendance Flagged" : "Attendance Recorded",
                             body.status === "flagged"
@@ -547,7 +611,7 @@
                         }, 1200);
                         resolve(true);
                     } catch (error) {
-                        msg.textContent = error.message || "Scan failed";
+                        msg.textContent = friendlyError(error, "Scan failed. Please try again.");
                         await showModal(
                             "Scan Failed",
                             msg.textContent,
@@ -561,7 +625,11 @@
                     }
                 },
                 (error) => {
-                    msg.textContent = `Location error: ${error.message}`;
+                    const code = error?.code;
+                    if (code === 1) msg.textContent = "Location permission denied. Allow location access and try again.";
+                    else if (code === 2) msg.textContent = "Location unavailable. Please enable GPS/location and try again.";
+                    else if (code === 3) msg.textContent = "Location request timed out. Try again in an open area.";
+                    else msg.textContent = `Location error: ${error?.message || "Unknown error"}`;
                     showModal(
                         "Location Error",
                         msg.textContent,
