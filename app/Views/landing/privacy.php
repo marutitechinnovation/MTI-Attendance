@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy Policy - MTI Attendance</title>
+    <title>Privacy Policy - Bitlence Attendance</title>
     
     <!-- QR Code Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%230d6efd'%3E%3Cpath d='M0 .5A.5.5 0 0 1 .5 0h3a.5.5 0 0 1 0 1H1v2.5a.5.5 0 0 1-1 0v-3zm12 0a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0V1h-2.5a.5.5 0 0 1-.5-.5zM.5 16a.5.5 0 0 1-.5-.5v-3a.5.5 0 0 1 1 0v2.5h2.5a.5.5 0 0 1 0 1h-3zm12 0a.5.5 0 0 1-.5-.5v-3a.5.5 0 0 1 1 0v2.5h2.5a.5.5 0 0 1 0 1h-3zM3 3h10v10H3V3z'/%3E%3Cpath d='M4 4h8v8H4z'/%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="<?= base_url('assets/icons/icon-192.svg') ?>">
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -185,14 +185,14 @@
 
     <!-- Navbar -->
     <nav class="navbar">
-        <a href="<?= base_url() ?>" class="logo">MTI Attendance</a>
+        <a href="<?= base_url() ?>" class="logo">Bitlence Attendance</a>
     </nav>
 
     <!-- Header -->
     <header class="page-header">
         <div class="header-content">
             <h1>Privacy Policy</h1>
-            <p>Your privacy is important to us. Learn how we handle your data in the MTI Attendance System.</p>
+            <p>Your privacy is important to us. Learn how we handle your data in the Bitlence Attendance System.</p>
         </div>
     </header>
 
@@ -200,8 +200,8 @@
     <main class="content-section">
         <div class="policy-block">
             <h2>Introduction</h2>
-            <p>Welcome to <strong>MTI Attendance</strong>. This Privacy Policy explains how our application collects, uses, and protects your information when you use our mobile application and web panel.</p>
-            <p>By using the MTI Attendance System, you agree to the collection and use of information in accordance with this policy.</p>
+            <p>Welcome to <strong>Bitlence Attendance</strong>. This Privacy Policy explains how our application collects, uses, and protects your information when you use our mobile application and web panel.</p>
+            <p>By using the Bitlence Attendance System, you agree to the collection and use of information in accordance with this policy.</p>
         </div>
 
         <div class="policy-block">
@@ -234,7 +234,7 @@
 
         <div class="policy-block">
             <h2>Geofencing & Location Permissions</h2>
-            <p>The MTI Attendance App requires <strong>Location Permissions</strong>. We only capture your location at the exact moment you perform a QR scan. We do <strong>not</strong> track your continuous background location or monitor your movements outside of attendance marking actions.</p>
+            <p>The Bitlence Attendance App requires <strong>Location Permissions</strong>. We only capture your location at the exact moment you perform a QR scan. We do <strong>not</strong> track your continuous background location or monitor your movements outside of attendance marking actions.</p>
         </div>
 
         <div class="policy-block">
@@ -255,7 +255,7 @@
         <div class="policy-block">
             <h2>Contact Us</h2>
             <p>If you have any questions about this Privacy Policy or how your data is handled, please contact your organization's HR department or reach out to us at:</p>
-            <p><strong>Email:</strong> support@mti-attendance.com</p>
+            <p><strong>Email:</strong> hello@bitlence.com</p>
         </div>
 
         <div class="last-updated">
@@ -265,8 +265,8 @@
 
     <!-- Footer -->
     <footer>
-        <span class="footer-logo">MTI Attendance</span>
-        <p>&copy; <?= date('Y') ?> MTI Attendance. All rights reserved.</p>
+        <span class="footer-logo">Bitlence Attendance</span>
+        <p>&copy; <?= date('Y') ?> Bitlence Attendance. All rights reserved.</p>
     </footer>
 
 </body>

@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= esc($pageTitle ?? 'MTI Attendance') ?> — MTI Attendance</title>
+    <title><?= esc($pageTitle ?? 'Bitlence Attendance') ?> — Bitlence Attendance</title>
     <!-- QR Code Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%230d6efd'%3E%3Cpath d='M0 .5A.5.5 0 0 1 .5 0h3a.5.5 0 0 1 0 1H1v2.5a.5.5 0 0 1-1 0v-3zm12 0a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0V1h-2.5a.5.5 0 0 1-.5-.5zM.5 16a.5.5 0 0 1-.5-.5v-3a.5.5 0 0 1 1 0v2.5h2.5a.5.5 0 0 1 0 1h-3zm12 0a.5.5 0 0 1-.5-.5v-3a.5.5 0 0 1 1 0v2.5h2.5a.5.5 0 0 1 0 1h-3zM3 3h10v10H3V3z'/%3E%3Cpath d='M4 4h8v8H4z'/%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="<?= base_url('assets/icons/icon-192.svg') ?>">
     <!-- Bootstrap 5 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <!-- Bootstrap Icons -->
@@ -33,7 +33,7 @@
         <div class="sidebar-brand">
             <div class="brand-icon"><i class="bi bi-qr-code-scan"></i></div>
             <div>
-                <div class="brand-name">MTI</div>
+                <div class="brand-name">Bitlence</div>
                 <div class="brand-sub">Attendance</div>
             </div>
         </div>

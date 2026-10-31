@@ -13,7 +13,6 @@ $routes->post('admin/login', 'Auth::adminLoginPost');
 $routes->get('/logout', 'Auth::logout');
 $routes->get('/',       'Landing::index');
 $routes->get('/privacy',  'Landing::privacy');
-$routes->post('/contact', 'Landing::submitContact');
 
 // Public linked (rotating) QR — open in browser on a tablet/kiosk
 $routes->get('qr/v/(:segment)', 'QrDisplay::live/$1');
@@ -78,7 +77,6 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
 // REST API — public endpoints (no auth required)
 $routes->group('api', function ($routes) {
     $routes->post('auth/login',              'Api\AuthApi::login');
-    $routes->post('auth/set-password',       'Api\AuthApi::setPassword');
     $routes->get('qr/live-token/(:segment)', 'Api\QrLiveApi::token/$1'); // kiosk display — no login needed
 });
 
@@ -88,22 +86,29 @@ $routes->group('api', ['filter' => 'api_auth'], function ($routes) {
     $routes->get('attendance/today',     'Api\AttendanceApi::today');
     $routes->get('attendance/history',   'Api\AttendanceApi::history');
 
-    $routes->get('employees',            'Api\EmployeeApi::index');
-    $routes->get('employees/(:num)',     'Api\EmployeeApi::show/$1');
-    $routes->post('employees',           'Api\EmployeeApi::create');
-    $routes->put('employees/(:num)',     'Api\EmployeeApi::update/$1');
-    $routes->delete('employees/(:num)', 'Api\EmployeeApi::delete/$1');
 
     $routes->get('qr-codes',            'Api\QRCodeApi::index');
     $routes->post('qr-codes',           'Api\QRCodeApi::create');
     $routes->put('qr-codes/(:num)',     'Api\QRCodeApi::update/$1');
     $routes->delete('qr-codes/(:num)', 'Api\QRCodeApi::delete/$1');
 
-    $routes->get('reports/daily',        'Api\ReportApi::daily');
-    $routes->get('reports/monthly',      'Api\ReportApi::monthly');
-    $routes->get('reports/export',       'Api\ReportApi::export');
 
     $routes->get('map/live',             'Api\MapApi::live');
 
     $routes->get('holidays',             'Api\HolidayApi::index');
+});
+
+// REST API — admin only (web admin session required)
+$routes->group('api', ['filter' => 'auth'], function ($routes) {
+    $routes->post('auth/set-password',  'Api\AuthApi::setPassword');
+
+    $routes->get('employees',           'Api\EmployeeApi::index');
+    $routes->get('employees/(:num)',    'Api\EmployeeApi::show/$1');
+    $routes->post('employees',          'Api\EmployeeApi::create');
+    $routes->put('employees/(:num)',    'Api\EmployeeApi::update/$1');
+    $routes->delete('employees/(:num)', 'Api\EmployeeApi::delete/$1');
+
+    $routes->get('reports/daily',       'Api\ReportApi::daily');
+    $routes->get('reports/monthly',     'Api\ReportApi::monthly');
+    $routes->get('reports/export',      'Api\ReportApi::export');
 });

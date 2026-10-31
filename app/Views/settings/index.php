@@ -19,7 +19,7 @@
                 <div class="col-12">
                     <label class="form-label fw-medium">Company Name</label>
                     <input type="text" name="company_name" class="form-control"
-                           value="<?= esc($settings['company_name'] ?? 'MTI Company') ?>">
+                           value="<?= esc($settings['company_name'] ?? 'Your Company') ?>">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-medium">Work Start Time</label>
@@ -71,12 +71,12 @@
                         <div class="col-md-6">
                             <label class="form-label fw-medium">App name (login &amp; title)</label>
                             <input type="text" name="employee_app_name" class="form-control" required maxlength="120"
-                                   value="<?= esc($settings['employee_app_name'] ?? 'MTI Attendance') ?>">
+                                   value="<?= esc($settings['employee_app_name'] ?? 'Bitlence Attendance') ?>">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-medium">Short name (home screen / manifest)</label>
                             <input type="text" name="employee_app_short_name" class="form-control" maxlength="12"
-                                   value="<?= esc($settings['employee_app_short_name'] ?? 'MTI Employee') ?>">
+                                   value="<?= esc($settings['employee_app_short_name'] ?? 'Bitlence Employee') ?>">
                             <div class="form-text">Keep short; iOS recommends ~12 characters.</div>
                         </div>
                         <div class="col-md-6">

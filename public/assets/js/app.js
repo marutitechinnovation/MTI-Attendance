@@ -204,7 +204,7 @@ function initDataTables() {
                             doc.setFontSize(7);
                             doc.setTextColor(150);
                             doc.text('Page ' + i + ' of ' + pageCount, 283, 200, { align: 'right' });
-                            doc.text('MTI Attendance System', 14, 200);
+                            doc.text('Bitlence Attendance System', 14, 200);
                         }
 
                         const filename = (exportTitle || 'report').replace(/[^a-zA-Z0-9]/g, '_') + '.pdf';

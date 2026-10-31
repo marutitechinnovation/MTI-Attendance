@@ -38,6 +38,7 @@ class Filters extends BaseFilters
         'performance'   => PerformanceMetrics::class,
         'auth'          => AuthFilter::class,
         'api_auth'      => ApiAuthFilter::class,
+        'demomode'      => \App\Filters\DemoModeFilter::class,
     ];
 
     /**
@@ -76,6 +77,7 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
+            'demomode',
             // 'honeypot',
             // 'csrf',
             // 'invalidchars',

@@ -1,4 +1,4 @@
-# 🏢 MTI Attendance System — Web Panel & API
+# 🏢 Bitlence Attendance System — Web Panel & API
 
 A QR-based employee attendance management system. Employees scan QR codes via mobile app to mark check-in/check-out. Admins manage everything from this web panel.
 
@@ -239,4 +239,4 @@ Admin can change the radius:
 
 ## 📄 License
 
-MIT License — MTI © 2026
+MIT License — Bitlence © 2026

@@ -6,6 +6,7 @@ use App\Models\AttendanceModel;
 use App\Models\QRTokenModel;
 use App\Models\EmployeeModel;
 use App\Models\SettingsModel;
+use App\Libraries\JwtHelper;
 use CodeIgniter\RESTful\ResourceController;
 
 class AttendanceApi extends ResourceController
@@ -23,6 +24,10 @@ class AttendanceApi extends ResourceController
 
         if (!$employeeId || !$token) {
             return $this->failValidationErrors('employee_id and qr_token are required.');
+        }
+
+        if (!$this->isTokenOwner($employeeId)) {
+            return $this->failForbidden('You can only access your own attendance.');
         }
 
         $qrModel   = new QRTokenModel();
@@ -50,6 +55,12 @@ class AttendanceApi extends ResourceController
                                       ->where('date', date('Y-m-d'))
                                       ->where('type', 'check_out')
                                       ->first();
+
+        // The shared demo login can scan again, so every visitor can try the flow
+        if ($alreadyCheckedOut && filter_var(env('app.demoMode', false), FILTER_VALIDATE_BOOLEAN)) {
+            $attModel->where('employee_id', $employeeId)->where('date', date('Y-m-d'))->delete();
+            $alreadyCheckedOut = null;
+        }
 
         if ($alreadyCheckedOut) {
             return $this->failForbidden('You have already completed your shift today. Please contact admin to delete or update data.');
@@ -123,6 +134,7 @@ class AttendanceApi extends ResourceController
     {
         $employeeId = $this->request->getGet('employee_id');
         if (!$employeeId) return $this->failValidationErrors('employee_id is required.');
+        if (!$this->isTokenOwner($employeeId)) return $this->failForbidden('You can only access your own attendance.');
 
         $model = new AttendanceModel();
         $model->autoCheckoutMissedLogs();
@@ -142,6 +154,7 @@ class AttendanceApi extends ResourceController
         $to         = $this->request->getGet('to')   ?? date('Y-m-d');
 
         if (!$employeeId) return $this->failValidationErrors('employee_id is required.');
+        if (!$this->isTokenOwner($employeeId)) return $this->failForbidden('You can only access your own attendance.');
 
         $model = new AttendanceModel();
         $model->autoCheckoutMissedLogs();
@@ -153,6 +166,14 @@ class AttendanceApi extends ResourceController
                        ->findAll();
 
         return $this->respond(['status' => 'success', 'data' => $logs]);
+    }
+
+    private function isTokenOwner($employeeId): bool
+    {
+        $header  = $this->request->getHeaderLine('Authorization');
+        $payload = JwtHelper::decode(substr($header, 7));
+
+        return $payload !== null && (int) ($payload['sub'] ?? 0) === (int) $employeeId;
     }
 
     // ─── Haversine formula ──────────────────────────────────────────────────────

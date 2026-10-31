@@ -12,8 +12,8 @@ class EmployeeApp extends BaseController
         $settings = $model->getAll();
 
         $defaults = [
-            'employee_app_name'               => 'MTI Attendance',
-            'employee_app_short_name'         => 'MTI Employee',
+            'employee_app_name'               => 'Bitlence Attendance',
+            'employee_app_short_name'         => 'Bitlence Employee',
             'employee_app_page_title'       => 'Employee App',
             'employee_app_theme_color'      => '#1A237E',
             'employee_app_background_color' => '#F5F7FB',

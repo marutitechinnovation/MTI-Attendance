@@ -123,7 +123,7 @@
                 <i class="bi bi-qr-code-scan"></i>
             </div>
             <div>
-                <div class="qrp-brand-name" style="color:#fff;font-size:15px;font-weight:700;">MTI Attendance</div>
+                <div class="qrp-brand-name" style="color:#fff;font-size:15px;font-weight:700;">Bitlence Attendance</div>
                 <div class="qrp-brand-sub" style="color:rgba(255,255,255,.75);font-size:10px;margin-top:2px;">Automated Attendance System</div>
             </div>
         </div>
@@ -138,7 +138,7 @@
     <div class="qrp-instruction" style="padding:0 18px 16px;display:flex;flex-direction:column;gap:8px;">
         <div style="display:flex;align-items:flex-start;gap:10px;">
             <div class="qrp-step-num" style="min-width:22px;height:22px;background:#2563eb;color:#fff;border-radius:50%;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
-            <div class="qrp-step-text" style="font-size:12px;color:#374151;">Open the <strong>MTI Attendance</strong> app</div>
+            <div class="qrp-step-text" style="font-size:12px;color:#374151;">Open the <strong>Bitlence Attendance</strong> app</div>
         </div>
         <div style="display:flex;align-items:flex-start;gap:10px;">
             <div class="qrp-step-num" style="min-width:22px;height:22px;background:#2563eb;color:#fff;border-radius:50%;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>

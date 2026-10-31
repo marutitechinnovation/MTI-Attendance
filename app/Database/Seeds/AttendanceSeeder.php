@@ -10,7 +10,7 @@ class AttendanceSeeder extends Seeder
     {
         // ─── Admin user ─────────────────────────────────────────────────────────
         $this->db->table('users')->insert([
-            'name'       => 'MTI Admin',
+            'name'       => 'Admin',
             'email'      => 'admin@mti.com',
             'password'   => password_hash('admin123', PASSWORD_DEFAULT),
             'role'       => 'admin',
@@ -20,7 +20,7 @@ class AttendanceSeeder extends Seeder
 
         // ─── Default settings ────────────────────────────────────────────────────
         $settings = [
-            ['key' => 'company_name',         'value' => 'MTI Company'],
+            ['key' => 'company_name',         'value' => 'Your Company'],
             ['key' => 'work_start_time',       'value' => '09:00'],
             ['key' => 'work_end_time',         'value' => '18:00'],
             ['key' => 'default_geofence_radius', 'value' => '50'],

@@ -6,8 +6,8 @@
     <meta name="theme-color" content="<?= esc($themeColor ?? '#1A237E') ?>">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="<?= esc($shortAppName ?? 'MTI Employee') ?>">
-    <title><?= esc($pageTitle ?? 'Employee App') ?> - <?= esc($brandName ?? 'MTI Attendance') ?></title>
+    <meta name="apple-mobile-web-app-title" content="<?= esc($shortAppName ?? 'Bitlence Employee') ?>">
+    <title><?= esc($pageTitle ?? 'Employee App') ?> - <?= esc($brandName ?? 'Bitlence Attendance') ?></title>
 
     <link rel="manifest" href="<?= base_url('manifest.webmanifest') ?>">
     <link rel="icon" href="<?= base_url('assets/icons/icon-192.svg') ?>" type="image/svg+xml">
@@ -36,7 +36,7 @@
         <div class="login-shell">
             <div class="login-brand">
                 <div class="logo-mark">M</div>
-                <h1><?= esc($brandName ?? 'MTI Attendance') ?></h1>
+                <h1><?= esc($brandName ?? 'Bitlence Attendance') ?></h1>
                 <p>Sign in with your employee account.</p>
             </div>
 
@@ -46,6 +46,9 @@
                 </div>
             <?php endif; ?>
 
+            <?php if (filter_var(env('app.demoMode', false), FILTER_VALIDATE_BOOLEAN)): ?>
+            <p style="font-size:14px;line-height:1.5;margin:0 0 12px"><strong>Live demo.</strong> Username: <code>demo.employee</code> Password: <code>demo1234</code><br>Scan the code at <a href="<?= base_url('qr/v/demo') ?>" target="_blank" rel="noopener">the demo QR screen</a> on another device.</p>
+            <?php endif; ?>
             <form id="login-form" class="card">
                 <label for="username">Username</label>
                 <input id="username" name="username" type="text" maxlength="50" required autocomplete="username">
@@ -68,7 +71,7 @@
             <div class="topbar-left">
                 <div class="topbar-logo">M</div>
                 <div class="topbar-titles">
-                    <span class="topbar-app-name"><?= esc($shortAppName ?? 'MTI Employee') ?></span>
+                    <span class="topbar-app-name"><?= esc($shortAppName ?? 'Bitlence Employee') ?></span>
                     <h2 id="top-title">Dashboard</h2>
                 </div>
             </div>

@@ -8,8 +8,8 @@
 -- ============================================================
 
 INSERT IGNORE INTO `settings` (`key`, `value`, `updated_at`) VALUES
-    ('employee_app_name', 'MTI Attendance', NOW()),
-    ('employee_app_short_name', 'MTI Employee', NOW()),
+    ('employee_app_name', 'Bitlence Attendance', NOW()),
+    ('employee_app_short_name', 'Bitlence Employee', NOW()),
     ('employee_app_page_title', 'Employee App', NOW()),
     ('employee_app_description', 'Employee attendance PWA.', NOW()),
     ('employee_app_theme_color', '#1A237E', NOW()),

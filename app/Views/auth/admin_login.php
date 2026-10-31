@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title>Administrator sign-in — MTI Attendance</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%230d6efd'%3E%3Cpath d='M0 .5A.5.5 0 0 1 .5 0h3a.5.5 0 0 1 0 1H1v2.5a.5.5 0 0 1-1 0v-3zm12 0a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0V1h-2.5a.5.5 0 0 1-.5-.5zM.5 16a.5.5 0 0 1-.5-.5v-3a.5.5 0 0 1 1 0v2.5h2.5a.5.5 0 0 1 0 1h-3zm12 0a.5.5 0 0 1-.5-.5v-3a.5.5 0 0 1 1 0v2.5h2.5a.5.5 0 0 1 0 1h-3zM3 3h10v10H3V3z'/%3E%3Cpath d='M4 4h8v8H4z'/%3E%3C/svg%3E">
+    <title>Administrator sign-in — Bitlence Attendance</title>
+    <link rel="icon" type="image/svg+xml" href="<?= base_url('assets/icons/icon-192.svg') ?>">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -45,6 +45,13 @@
             <i class="bi bi-check-circle-fill"></i>
             <?= session()->getFlashdata('success') ?>
         </div>
+    <?php endif; ?>
+
+    <?php if (filter_var(env('app.demoMode', false), FILTER_VALIDATE_BOOLEAN)): ?>
+    <div class="alert alert-info py-2 small" style="text-align:left">
+        <strong>Live demo.</strong> Sample data, read-only, refreshed nightly.<br>
+        Email: <code>admin@demo.bitlence.com</code><br>Password: <code>demo1234</code><br><a href="<?= base_url('employee') ?>">Open the employee app</a>
+    </div>
     <?php endif; ?>
 
     <form action="<?= base_url('admin/login') ?>" method="POST">

@@ -1,6 +1,9 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
+    # Never serve project files, even when the web root is the project root.
+    RewriteRule ^(\.env|env$|\.git|\.claude|\.devCodeTracker|app/|vendor/|writable/|tests/|builds/|database/|docker/|spark$|composer\.|README|API_DOCUMENTATION|EMPLOYEE_PWA_QA|LICENSE|Dockerfile|docker-compose|phpunit|preload\.php) - [F,NC]
+
     # If hosting points the domain to project root, route everything into /public.
     # Avoid looping when the request is already under /public.
     RewriteCond %{REQUEST_URI} !^/public/ [NC]

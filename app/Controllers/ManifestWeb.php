@@ -10,8 +10,8 @@ class ManifestWeb extends BaseController
     {
         $settings = new SettingsModel();
 
-        $name        = $settings->getSetting('employee_app_name', 'MTI Attendance');
-        $shortName   = $settings->getSetting('employee_app_short_name', 'MTI Employee');
+        $name        = $settings->getSetting('employee_app_name', 'Bitlence Attendance');
+        $shortName   = $settings->getSetting('employee_app_short_name', 'Bitlence Employee');
         $description = $settings->getSetting('employee_app_description', 'Employee attendance PWA.');
         $theme       = $settings->getSetting('employee_app_theme_color', '#1A237E');
         $background  = $settings->getSetting('employee_app_background_color', '#F5F7FB');

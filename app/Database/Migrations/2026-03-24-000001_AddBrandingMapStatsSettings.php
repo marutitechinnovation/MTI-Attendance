@@ -9,8 +9,8 @@ class AddBrandingMapStatsSettings extends Migration
     public function up(): void
     {
         $defaults = [
-            ['key' => 'employee_app_name', 'value' => 'MTI Attendance'],
-            ['key' => 'employee_app_short_name', 'value' => 'MTI Employee'],
+            ['key' => 'employee_app_name', 'value' => 'Bitlence Attendance'],
+            ['key' => 'employee_app_short_name', 'value' => 'Bitlence Employee'],
             ['key' => 'employee_app_page_title', 'value' => 'Employee App'],
             ['key' => 'employee_app_description', 'value' => 'Employee attendance PWA.'],
             ['key' => 'employee_app_theme_color', 'value' => '#1A237E'],

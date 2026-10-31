@@ -1,4 +1,4 @@
-# MTI Attendance System — REST API Documentation
+# Bitlence Attendance System — REST API Documentation
 
 > **Base URL:** `http://<your-server>/api`
 > **Local Dev:** `http://localhost:8082/api`
@@ -1107,4 +1107,4 @@ MobileScanner(
 
 ---
 
-*Updated: 2026-02-21 | MTI Attendance System v1.1 — Added Auth (Username + Password login)*
+*Updated: 2026-02-21 | Bitlence Attendance System v1.1 — Added Auth (Username + Password login)*
